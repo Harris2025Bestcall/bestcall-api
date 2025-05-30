@@ -25,3 +25,4 @@ notebook==7.1.2
 # FastAPI Backend
 fastapi
 uvicorn
+python-dotenv
