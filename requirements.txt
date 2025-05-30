@@ -21,3 +21,7 @@ matplotlib==3.8.4
 # Notebook Support
 jupyter==1.0.0
 notebook==7.1.2
+
+# FastAPI Backend
+fastapi
+uvicorn
