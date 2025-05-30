@@ -1,0 +1,23 @@
+# Core Data Libraries
+pandas==2.2.2
+numpy==1.26.4
+
+# PDF and HTML Parsing
+PyPDF2==3.0.1
+beautifulsoup4==4.12.3
+lxml==5.2.1
+
+# Machine Learning
+scikit-learn==1.4.2
+joblib==1.4.0
+
+# OCR Support (Optional for PDF fallback)
+pytesseract==0.3.10
+Pillow==10.3.0
+
+# Visualization / Debugging (optional)
+matplotlib==3.8.4
+
+# Notebook Support
+jupyter==1.0.0
+notebook==7.1.2

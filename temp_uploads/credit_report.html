@@ -1,0 +1,656 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- saved from url=(0069)file:///C:/Users/harri/OneDrive/Desktop/Credit%20Bureau%20Report.html -->
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:st1="urn:schemas-microsoft-com:office:smarttags" xmlns="http://www.w3.org/TR/REC-html40" lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"><meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="_csrf" content="70dd9536-8d8e-4f53-816b-d924de3df803">
+<meta name="_csrf_header" content="X-CSRF-TOKEN">
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+        
+        
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Updated Framework -->
+	
+	<meta name="TLTIP" content="on">
+
+	
+			<meta http-equiv="Pragma" content="no-cache">
+			<meta http-equiv="Expires" content="-1">
+	
+
+	
+	<link rel="stylesheet" href="./credit_report_files/global.css">
+	<link rel="stylesheet" href="./credit_report_files/skin.css">
+	
+
+
+
+
+
+
+
+
+
+
+
+    
+        
+        
+            
+            
+            
+                <script language="javascript" src="./credit_report_files/jquery-2.2.4.min.js.download"></script>
+            
+            
+        
+    
+
+    
+
+    
+
+
+	
+
+
+
+
+
+
+
+
+
+
+    
+        
+        
+            
+                
+                
+                    <script language="javascript" src="./credit_report_files/jquery-ui.min.js.download"></script>
+                
+            
+            
+        
+    
+
+    
+
+    
+
+    
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+    
+        
+            
+                
+                
+                    
+                        <script src="./credit_report_files/jquery-migrate-1.4.1.js.download"></script>
+                    
+                    
+                
+            
+
+            
+
+            
+        
+    
+
+
+	
+
+	<script language="javascript">
+		$(document).ready(function() {
+            $('html').attr('lang','en');
+			document.title = 'Credit Bureau Report';
+		});
+
+		function printScreen() {
+			window.print();
+		}
+	</script>
+	
+	
+	
+	
+		<style type="text/css" media="print"> 
+			#buttons{display:none;}
+		</style>
+	
+		
+		
+		
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+        
+        
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Updated Framework -->
+
+<link rel="stylesheet" href="./credit_report_files/global.css">
+
+
+	<link rel="stylesheet" href="./credit_report_files/ncc.css">
+
+<link rel="stylesheet" href="./credit_report_files/noPrint.css" media="print">
+<style type="text/css" media="print">
+	pre {
+		page-break-inside:auto !important;
+	}
+</style>
+<script language="javascript" src="./credit_report_files/customViewer.js.download"></script>
+<script type="text/javascript">
+	function onCustomViewerIframeLoad(pdfViewerId, pdfPath) {
+        var domainPath = window.origin;
+		var pdfSrc = "../webjars/pdf-js/2.13.216/web/viewer.html?file="+domainPath+pdfPath+"#zoom=page-width";
+		var pdfIframe = document.getElementById(pdfViewerId);
+		pdfIframe.src = pdfSrc;
+		const MAX_RETRY_COUNT = 25;
+		const INITIALIZE_VIEWER_WAIT_TIME_MILLISECONDS = 200;
+		let retryCount = 0;
+
+		const intervalId = setInterval(() => {
+			if (retryCount < MAX_RETRY_COUNT && window.CustomPdfViewer && window.CustomPdfViewer.setupPage) {
+				clearInterval(intervalId);
+				CustomPdfViewer.setupPage(pdfViewerId);
+			} else if (retryCount >= MAX_RETRY_COUNT) {
+				clearInterval(intervalId);
+				console.error("max retry count reached but CustomPdfViewer was not defined.");
+			} else {
+				// custom viewer javascript is not yet loaded.
+				retryCount++;
+			}
+		}, INITIALIZE_VIEWER_WAIT_TIME_MILLISECONDS);
+	}
+</script>
+
+
+
+
+
+	
+	
+		
+		<title>Credit Bureau Report</title></head><body><div id="reportBody">
+	
+
+
+
+
+
+
+
+		<span style="font-size:10pt;">
+		
+			<!--TLTIHB-->
+			
+				<!--CSS Start-->
+
+ 
+  <style type="text/css"><!--
+                    @media print {  * { -webkit-print-color-adjust: exact;} .hidden-print {display: none !important;} .non-fcra-msg {display: block !important; background-color:#D9D9D9;}} 
+					TABLE
+						{border-color: #C0C0C0; border-inside: #C0C0C0; border-size: 10 solid}
+					TR
+						{border-color: #C0C0C0; border-inside: #C0C0C0; border-size: 10 solid}
+					TD
+						{border-color: #C0C0C0; border-inside: #C0C0C0; border-size: 10 solid}
+					TH 
+						{font-family: arial; font-size: 9pt} 
+					TD
+						{font-family: arial; font-size: 9pt}
+					.all4borderheading 
+						{font-family: arial; font-size: 12pt; letter-spacing: 3px; text-align: 
+						center; background-color: lightblue; border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; 
+						border-top: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0}
+                    .all4borderheadingclear 
+						{font-family: arial; font-size: 12pt; letter-spacing: 3px; text-align: 
+						center; border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; 
+						border-top: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0}
+					.lrtheading 
+						{font-family: arial; font-size: 12pt; letter-spacing: 3px; text-align: 
+						center; background-color: lightblue; border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; 
+						border-top: 2px solid #C0C0C0;}
+					.all4border 
+						{font-family: arial; font-size: 12pt; letter-spacing: 3px; border-left: 2px solid 
+						#C0C0C0; border-right: 2px solid #C0C0C0; border-top: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0} 
+					.lrbalert 
+						{background-color:#00ffff; border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0}
+                    .lbalert 
+			            {background-color:#00ffff; border-left: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0}
+					.lrbalert 
+						{background-color:#00ffff; border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0}
+					.lrtbalert 
+						{background-color:#00ffff; border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; border-top: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0}						                    
+                    .nbalert
+                        {background-color:#ffccff;}
+					.lrtspaced 
+						{border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; border-top: 2px solid #C0C0C0; font-family: arial; 
+						font-size: 12pt; letter-spacing: 3px}					
+					.ltborder 
+						{border-left: 2px solid #C0C0C0; border-top: 2px solid #C0C0C0}
+					.rtborder 
+						{border-right: 2px solid #C0C0C0; border-top: 2px solid #C0C0C0}
+					.ltbborder 
+						{border-left: 2px solid #C0C0C0; border-top: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0}
+					.lborder 
+						{border-left: 2px solid #C0C0C0}
+					.rborder 
+						{border-right: 2px solid #C0C0C0}
+					.lbborder 
+						{border-left: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0}
+                    .lbborderalert
+                        {border-left: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0; background-color:#ffccff}
+                    .lbbordergreen
+                        {border-left: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0; background-color:#CCFFCC}
+                    .lbborderred
+                        {border-left: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0; background-color:#FFCCFF}
+					.lrbborder 
+						{border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0} 
+                    .lrbborderalert
+						{background-color:#ffccff; border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0} 
+                    .lrbbordergreen
+						{background-color:#CCFFCC; border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0} 
+                    .lrbborderred
+						{background-color:#FFCCFF; border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0} 
+					.lrborder 
+						{border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0}
+					.lrtborder 
+						{border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; border-top: 2px solid #C0C0C0}
+					.lrbborder 
+						{border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0}
+					.rbborder 
+						{border-right: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0}
+					.tborder 
+						{border-top: 2px solid #C0C0C0}
+					.lrtbborder 
+						{border-left: 2px solid #C0C0C0; border-right: 2px solid #C0C0C0; border-top: 2px solid #C0C0C0; border-bottom: 2px solid #C0C0C0}						
+					.courier 
+						{font-family: courier; font-size: 10pt} 
+					.spaced 
+						{font-family: arial; font-size: 12pt; letter-spacing: 3px}
+					.heading 
+						{font-family: arial; font-size: 12pt; font-weight: bold; letter-spacing: 3px}
+                    .heading2
+                        {font-family: arial; font-size: 13pt; font-weight: bold; letter-spacing: 3px;}
+                    .out_of_wallet a
+                        {font-size: 9pt; color:Red; }    
+                    .twn_class a
+                        {font-family: Arial;}
+                    .twn_class2 a
+                        {font-family: Arial;}
+					.tblheading 
+						{font-family: arial; font-size: 12pt; font-weight: bold; letter-spacing: 3px; text-align: center; background-color: lightblue}
+					P
+						{font-family: arial; font-size: 9pt}
+					P.noleftpad 
+						{font-family : arial; font-size: 9pt; padding-right: 0.05cm; padding-top: 0.05cm; padding-bottom: 0.05cm}
+					P.TRpad 
+						{font-family: monospace; font-size: 10pt; padding-top: 0.05cm; padding-bottom: 0.05cm; padding-left: 0.25cm; padding-right: 0.25cm; letter-spacing: -1px}
+					.mono 
+						{font-family: 'Courier New',monospace; font-size: 10pt}
+					.pagebreak 
+						{page-break-after: always}
+					.trade 
+						{background-color: #FFFFFF}
+					.derogtrade 
+						{background-color: #ffccff}
+					.alert 
+						{background-color:lightsalmon}
+					P.breakhere 
+						{page-break-before: always}
+                    .non-fcra-break {padding-top:96px; padding-bottom:96px;}
+                    .non-fcra-msg {display: block; background-color:#D9D9D9;}
+                    .non-fcra-pdf-msg {display: block !important; background-color:#D9D9D9;}
+                    .non-fcra-title{font-family: arial;font-size: 12pt;letter-spacing: 3px;text-align: center;}
+					--> </style>
+  <!--CSS End--> 
+ 
+ 
+  <pre> ------------------- IDENTITY AND COMPLIANCE TTY (NON-FCRA) -------------------
+ App: SMITH,JESSICA S
+ DOB:XX-XX-1992
+ SSN: XXX-XX-X-32
+</pre> 
+  <pre></pre> 
+  <pre></pre> 
+  <pre> ------------------------------------------------------------------------------- 
+ Household Insight
+ Annual Household Income              $50,928
+ Income from Salary                   $37,456
+ Income from Non-Salary               $13,472
+ Spending Power                       $33,460
+
+ Household Insight is an estimation of total household income based on a third party source and cannot be 
+ used for any purpose under the FCRA. (for example, eligibility decisions).
+ ------------------------------------------------------------------------------- 
+</pre> 
+  <div class="non-fcra-break"> 
+   <span class="non-fcra-msg"> Intentional Break. See FCRA credit and score data below.</span> 
+  </div> 
+  <pre> --------------------- TRANSUNION CREDIT REPORT TTY (FCRA) -------------------- 
+
+ [FOR]          [SUB NAME]          [MKT SUB]  [INFILE]   [DATE]      [TIME] 
+ (I) A4242956   Westborn CDJR                  10/10      5/27/2025   12:16 
+
+ [SUBJECT]                                          [SSN]        [BIRTH DATE]
+ SMITH, JESSICA S                                   XXX-XX-3261  XX/XX/1992  
+                                                                 [TELEPHONE] 
+                                                                             
+
+ [CURRENT ADDRESS]                                               [DATE RPTD] 
+ 20518 OAKFIELD, DETROIT MI, 48235                               9/10
+ [FORMER ADDRESS]                                                            
+ 25740 W 12 MILE, SOUTHFIELD MI, 48034                           1/25
+ 25500 W 12 MILE 306, SOUTHFIELD MI, 48034                           
+ [CURRENT EMPLOYER]                            [POSITION]                    
+ [EMPLOYER ADDRESS]                                              [DATE RPTD] 
+ CAFEOBEARS                                     CASHIER                      
+                                                                10/13
+
+ ----------------------------------------------------------------------------
+ A D D  O N  P R O D U C T  S U M M A R Y                                    
+ Default AddOn Product FICO Auto Score 9 (code: 00W82) was delivered.       
+ Requested AddOn Automobile Summary (code: 07070) not received. Status: Deli
+ ----------------------------------------------------------------------------
+ M O D E L   P R O F I L E
+ ***FICO Auto Score 9  SCORE +574       : 038, 005, 012, 003***
+ Too Many Inquiries                                                            
+
+ ----------------------------------------------------------------------------
+ C R E D I T   S U M M A R Y      - - -    T O T A L  F I L E  H I S T O R Y
+ PR=0  COL=4  NEG=1  HSTNEG=0  TRD=8  RVL=0  INST=1  MTG=2  OPEN=5  INQ=3  
+ DEL30=0  DEL60=0  DEL90=0  HSTDEL30=0  HSTDEL60=0  HSTDEL90=0  
+               HIGH CRED  CRED LIM  BALANCE  PAST DUE  MNTHLY PAY AVAILABLE
+ INSTALLMENT:  $0         $0        $261     $261      $0             
+ OPEN:         $6377      $6377     $4951    $0        $0             
+ MORTGAGE:     $584       $1250     $224     $0        $385           
+ TOTALS:       $6961      $7627     $5436    $261      $385       
+ ----------------------------------------------------------------------------
+ C O L L E C T I O N S                                                       
+ SUBNAME       SUBCODE   ECOA OPENED  CLOSED $PLACED  CREDITOR            MOP
+ ACCOUNT#                     VERIFIED       BALANCE  REMARKS                
+ CREDIT COLL   01GZD005  I    10/23    3/24  $201     GOVERNMENT EMPLOYEE O9P
+                               6/24A         $0       Paid collection        
+
+ I C SYSTEM    02834001  I    11/24          $204     COMCAST XFINITY     O9B
+                               5/25A         $204     Placed for collection  
+
+ NCA           09883003  I    12/22          $627     ADVANCE AMERICA     O9B
+                               5/25A         $627     Account information di 
+
+ ALLST CR BUR  013ZV001  I     3/22          $4120    CREDIT UNION ONE CK O9B
+                               4/25A         $4120    Placed for collection  
+ ----------------------------------------------------------------------------
+ T R A D E S                                                                 
+ SUBNAME      SUBCODE   OPENED  HIGHCRED TERMS     MAXDELQ  PAYPAT  1-12 MOP 
+ ACCOUNT#               VERFIED CREDLIM  PASTDUE   PMTAMT   PAYPAT 13-24     
+ ECOA COLLATRL/LOANTYPE CLSD/PD BALANCE  REMARKS                  MO 30/60/90
+ FNWSE/OPPLNS 02EZF004   1/20   $1200    009M               -1           I09
+                         4/25A           $261                            
+ I    Unsecured          8/21C  $261     Unpaid balance charged              
+
+ DEFERIT      02J86001   2/25   $113                        11           M01
+                         4/25A  $450     $0                              
+ I    Line of Credit            $0                               2  0 /0 /0 
+
+ SEZZLE       02HF4001   1/25   $471     MIN                11           M01
+                         3/25A  $800     $0        $385                  
+ I    Line of Credit            $224                             2  0 /0 /0 
+
+ FLEX         02JQ6238   8/24   $1426                       1XXXX11      O01
+                         4/25A           $0                              
+ I    Rental Agreement          $0                               7  0 /0 /0 
+ ----------------------------------------------------------------------------
+ I N Q U I R I E S                                                           
+ DATE     SUBCODE         SUBNAME        TYPE    AMOUNT                      
+ 5/27/25  ALA04242956     WESTBORNCDJR                  
+ 2/18/25  BDF02878842     CCB RISE                      
+ 10/29/24 BPC03575459     CAPITAL ONE                   
+
+ ----------------------------------------------------------------------------
+ C R E D I T  R E P O R T  S E R V I C E D  B Y :                            
+ TRANS UNION                                                   800-888-4213  
+ 2 BALDWIN PLACE, P. O. BOX 1000,CHESTER, PA. 19022                          
+ Consumer disclosures can be obtained online through TransUnion at:          
+      http://www.transunion.com/direct                                       
+                                                                             
+                             END OF TRANSUNION REPORT                        
+</pre>
+ 
+
+				
+				
+				
+			
+			
+		</span>
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+        
+        
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+        
+        
+
+
+<div style="width: 100%;">
+	<script>
+		jQuery(document).ready(function() {
+			SecondaryNavigationMenu.initialize(document.NavigationJSON);
+		});
+	</script>
+	
+
+<script>
+    if(!document.NavigationJSON) {
+        document.NavigationJSON = [{"navigationLink":{"label":"News/Info","linkId":"tab.home","labelKey":"tab.home","href":"/Web/common/LandingPageAction.do?fromDealManager&homeTab=true","f2f":null},"subGroupings":null},{"navigationLink":{"label":"Deals","linkId":"tab.deals","labelKey":"tab.deals","href":"/Web/common/navigateToDefaultManager.spring","f2f":"onClick_DealManagerTab"},"subGroupings":[{"navigationLinks":[{"label":"App Manager","linkId":"link.applicationManager","labelKey":"tab.applicationManager","href":"/Web/dealmanager/amManagerSearch.spring","f2f":"onClick_DealManagerTab","checkBroadcastMessage":true},{"label":"Contract Manager","linkId":"link.dealsContractManager","labelKey":"tab.contractManager","href":"/Web/dealmanager/cmManagerSearch.spring","f2f":"onClick_DealManagerTab","checkBroadcastMessage":true},{"label":"Deal Manager","linkId":"link.dealManager","labelKey":"tab.dealManager","href":"/Web/dealmanager/dmManagerSearch.spring","f2f":"onClick_DealManagerTab","checkBroadcastMessage":true},{"label":"Desktop","linkId":"link.desktop","labelKey":"tab.desktop","href":"/Web/common/NavigateToCustomer.spring?action=desktop","f2f":"onClick_DealManagerTab","checkBroadcastMessage":true},{"label":"Lead Manager","linkId":"link.leadManager","labelKey":"tab.leadManager","href":"/Web/dealmanager/lmManagerSearch.spring","f2f":"onClick_DealManagerTab","checkBroadcastMessage":true}]}]},{"navigationLink":{"label":"New App","linkId":"tab.newApp","labelKey":"tab.newApp","href":"/Web/creditapplication/NewCreditApplicationForward.do","f2f":"onClick_NewApplicationTab"},"subGroupings":[{"navigationLinks":[{"label":"New Business App","linkId":"link.newBusinessApp","labelKey":"tab.newBusinessApp","href":"/Web/creditapplication/ApplicationDispatchAction.do?action=createCreditApp&appType=B","f2f":"onClick_NewApplicationTab"},{"label":"New Individual App","linkId":"link.newApplication","labelKey":"tab.newApplication","href":"/Web/creditapplication/ApplicationDispatchAction.do?action=createCreditApp&appType=A","f2f":"onClick_NewApplicationTab"},{"label":"Payment Calculator","linkId":"link.paymentCalculator","labelKey":"tab.paymentCalculator","href":"/Web/boarding/dda/paymentcalculator/initialize.spring","f2f":"onClick_PaymentCalculatorTab"},{"label":"Pre Approvals","linkId":"link.newPreApprovals","labelKey":"tab.newPreApprovals","href":"/Web/creditapplication/PreApprovalDispatchAction.spring","f2f":"onClick_PreApprovalTab"}]}]},{"navigationLink":{"label":"Contracts","linkId":"tab.econtracts","labelKey":"tab.econtracts","href":"/Web/dealmanager/cmManagerSearch.spring?fromContractsTab=Y","f2f":null},"subGroupings":[{"navigationLinks":[{"label":"Contract Manager","linkId":"link.contractManager","labelKey":"tab.contractManager","href":"/Web/dealmanager/ecContractManagerSearch.spring","f2f":"onClick_ContractManagerTab","checkBroadcastMessage":true},{"label":"Contract Distribution","linkId":"link.econtract_dist","labelKey":"tab.econtract_dist","href":"/Web/common/NavigateToEc.spring?forwardTo=contractDist","f2f":"onClick_ContractDistributionTab"},{"label":"New Spot Buy","linkId":"link.econtract_spot","labelKey":"tab.econtract_spot","href":"/Web/common/NavigateToEc.spring?forwardTo=spotContract","f2f":"onClick_ContractSpotTab"},{"label":"Edit Custom Mapping","linkId":"link.econtract_edit_custom_mapping","labelKey":"tab.econtract_edit_custom_mapping","href":"/Web/common/NavigateToEc.spring?forwardTo=editDMSCustomMapping","f2f":null},{"label":"Signature Templates","linkId":"link.econtract_signature_templates","labelKey":"tab.signature_Templates","href":"/Web/common/NavigateToEc.spring?forwardTo=signatureTemplates","f2f":null}]}]},{"navigationLink":{"label":"Credit Reports & Customers","linkId":"tab.customers","labelKey":"tab.customers","href":"/Web/common/NavigateToCustomer.spring?action=deal-jacket-new-credit-compliance","f2f":null},"subGroupings":[{"navigationLinks":[{"label":"New Credit/ID<i>One</i> Request","linkId":"link.customersNewCreditRequest1","labelKey":"tab.customersNewCreditRequest","href":"/Web/common/NavigateToCustomer.spring?action=deal-jacket-new-credit-compliance","f2f":"onClick_NewCreditReportTab"},{"label":"New OFAC Request","linkId":"link.customersNewOFACRequest","labelKey":"tab.cb.newOFACRequest","href":"/Web/common/NavigateToCustomer.spring?action=deal-jacket-new-credit-compliance&requestFor=ofac","f2f":"onClick_NewCreditReportTab"},{"label":"New Individual Customer","linkId":"link.customersNewIndividualCustomer","labelKey":"tab.customersNewIndividualCustomer","href":"/Web/common/NavigateToCustomer.spring?action=new-individual-customer","f2f":"onClick_DealManagerTab"},{"label":"New Business Customer","linkId":"link.customersNewBusinessCustomer","labelKey":"tab.customersNewBusinessCustomer","href":"/Web/common/NavigateToCustomer.spring?action=new-business-customer","f2f":"onClick_DealManagerTab"},{"label":"Customers","linkId":"link.customersCustomerManager1","labelKey":"tab.customersCustomerManager","href":"/Web/common/NavigateToCustomer.spring","f2f":"onClick_DealManagerTab"}]}]},{"navigationLink":{"label":"Compliance","linkId":"tab.complianceNew","labelKey":"tab.compliance","href":"/Web/common/NavigateToCustomer.spring?action=overall-compliance","f2f":null},"subGroupings":[{"navigationLinks":[{"label":"Compliance Dashboard","linkId":"link.complianceSnapShotNew","labelKey":"tab.complianceSnapShot","href":"/Web/common/NavigateToCustomer.spring?action=overall-compliance","f2f":"onClick_ComplianceTab"},{"label":"User Compliance Dashboard","linkId":"link.userComplianceDashboard","labelKey":"tab.userComplianceDashboard","href":"/Web/common/NavigateToCustomer.spring?action=user-compliance","f2f":"onClick_ComplianceTab"}]}]},{"navigationLink":{"label":"SecureDoc<i>One</i>","linkId":"tab.docretention","labelKey":"tab.docretention","href":"/Web/docretention/initialize.spring","f2f":"onClick_SecureDocOneTab"},"subGroupings":[{"navigationLinks":[{"label":"Search for Documents","linkId":"link.searchForDocuments","labelKey":"tab.searchForDocuments","href":"/Web/docretention/initialize.spring","f2f":"onClick_SecureDocOneTab"},{"label":"Upload Documents","linkId":"link.uploadDocuments","labelKey":"tab.uploadDocuments","href":"/Web/docretention/uploadInitialize.spring","f2f":"onClick_SecureDocOneTab"}]}]},{"navigationLink":{"label":"Payoff Quote","linkId":"tab.payoffQuote","labelKey":"tab.payoffQuote","href":"/Web/payoffQuote/requestPayoffQuote.do?fromCA=N","f2f":"onClick_PayOffQuoteTab"},"subGroupings":[{"navigationLinks":[{"label":"New Payoff Request","linkId":"link.newPayoffRequest","labelKey":"tab.newPayoffRequest","href":"/Web/payoffQuote/requestPayoffQuote.do?fromCA=N","f2f":"onClick_PayOffQuoteTab"},{"label":"Payoff Quote Manager","linkId":"link.payoffQuoteManager","labelKey":"tab.payoffQuoteManager","href":"/Web/payoffQuote/viewPayoffQuoteManagerList.spring?fromTab=Y","f2f":"onClick_PayOffQuoteTab"}]}]},{"navigationLink":{"label":"Vehicle Values","linkId":"tab.autovalue","labelKey":"tab.autovalue","href":"/Web/autovalue/newAutoValue.spring","f2f":"onClick_VehicleValuesTab"},"subGroupings":[{"navigationLinks":[{"label":"New Valuation","linkId":"link.newAutoValue","labelKey":"tab.newAutoValue","href":"/Web/autovalue/newAutoValue.spring","f2f":"onClick_VehicleValuesTab"},{"label":"Valuation Manager","linkId":"link.prevAutoValue","labelKey":"tab.prevAutoValue","href":"/Web/autovalue/viewAutoValueList.spring","f2f":"onClick_VehicleValuesTab"}]}]},{"navigationLink":{"label":"Menu","linkId":"tab.menuTrakNonSubscribed","labelKey":"tab.menuTrak","href":"javascript:displayResizableModal('/casstatic/staticweb/MaximTrakMarketingMessage.html','Routeone Menu',250,900);","f2f":null},"subGroupings":null},{"navigationLink":{"label":"Rates &amp; Forms","linkId":"tab.rateSheets","labelKey":"tab.rateSheets","href":"/Web/ratesheets/rateSheet.spring?action=getdetails","f2f":"onClick_RateSheetTab"},"subGroupings":null},{"navigationLink":{"label":"Reports","linkId":"tab.reports","labelKey":"tab.reports","href":"/Web/common/ReportAction.spring","f2f":null,"popup":"true"},"subGroupings":[{"navigationLinks":[{"label":"Credit Bureau Volume","linkId":"link.creditBureauVolume","labelKey":"tab.creditBureauVolume","href":"/Web/common/ReportAction.spring?ReportAction=run&Report=rpt001s10","f2f":null,"popup":"Reports"},{"label":"Customer Prospecting","linkId":"link.customerProspecting","labelKey":"tab.customerProspecting","href":"/Web/common/ReportAction.spring?ReportAction=run&Report=rpt001s17","f2f":null,"popup":"Reports"},{"label":"Decision and Funding Analysis","linkId":"link.decisionAnalysis","labelKey":"tab.decisionAnalysis","href":"/Web/common/ReportAction.spring?ReportAction=run&Report=rpt001s18","f2f":null,"popup":"Reports"},{"label":"eContracting Performance and Opportunity","linkId":"link.eContractingOpportunity","labelKey":"tab.eContractingOpportunity","href":"/Web/common/ReportAction.spring?ReportAction=run&Report=rpt001s27","f2f":null,"popup":"Reports"},{"label":"F&I Log","linkId":"link.fAndILog","labelKey":"tab.fAndILog","href":"/Web/common/ReportAction.spring?ReportAction=run&Report=rpt001s7","f2f":null,"popup":"Reports"},{"label":"Reserve","linkId":"link.reserve","labelKey":"tab.reserve","href":"/Web/common/ReportAction.spring?ReportAction=run&Report=rpt001s8","f2f":null,"popup":"Reports"},{"label":"Time Sales Analysis","linkId":"link.timesSalesAnalysis","labelKey":"tab.timesSalesAnalysis","href":"/Web/common/ReportAction.spring?ReportAction=run&Report=rpt001s16","f2f":null,"popup":"Reports"},{"label":"Trend Analysis","linkId":"link.trendAnalysis","labelKey":"tab.trendAnalysis","href":"/Web/common/ReportAction.spring?ReportAction=run&Report=rpt001s14","f2f":null,"popup":"Reports"},{"label":"Reports Menu","linkId":"link.reportsMenu","labelKey":"tab.reportsMenu","href":"/Web/common/ReportAction.spring","f2f":null,"popup":"Reports"},{"label":"Digital Retail Analytics","linkId":"link.xrdAnalytics","labelKey":"tab.xrdAnalytics","href":"/Web/boarding/xrd/showAnalytics.do","f2f":null}]}]},{"navigationLink":{"label":"Admin","linkId":"tab.dealerAdministration","labelKey":"tab.dealerAdministration","href":"/Web/boarding/dda/initializeDealerInfo.do","f2f":"onClick_DealerAdministrationTab"},"subGroupings":[{"navigationLinks":[{"label":"Credit Bureau/DSP","linkId":"link.creditBureauDsp","labelKey":"tab.creditBureauDsp","href":"/Web/boarding/dsp/manageAssociations/initializeDealerDspAssociations.do","f2f":"onClick_DealerAdministrationTab"},{"label":"Dealer Info","linkId":"link.dealerInfo","labelKey":"tab.dealerInfo","href":"/Web/boarding/dda/initializeDealerInfo.do","f2f":"onClick_DealerAdministrationTab"},{"label":"Billing Info","linkId":"link.dealerBillingInfo","labelKey":"tab.dealerBillingInfo","href":"/Web/common/navigateToDealerAdmin.spring?action=billing","f2f":null},{"label":"Finance Sources","linkId":"link.financeSources","labelKey":"tab.financeSources","href":"/Web/boarding/dda/initializeFinanceSources.do","f2f":"onClick_DealerAdministrationTab"},{"label":"Franchise/Brand","linkId":"link.franchiseBrands","labelKey":"tab.franchiseBrands","href":"/Web/boarding/dda/initializeFranchiseBrand.do","f2f":"onClick_DealerAdministrationTab"},{"label":"Preferences","linkId":"link.dealerPreferenceInfo","labelKey":"tab.dealerPreferenceInfo","href":"/Web/boarding/dda/initializeDealerPreferenceInfo.do","f2f":"onClick_DealerAdministrationTab"},{"label":"Premium Services","linkId":"link.premiumServices","labelKey":"tab.premiumServices","href":"/Web/boarding/dda/premiumServices.do","f2f":"onClick_DealerAdministrationTab"},{"label":"Provider Management","linkId":"link.providerManagement","labelKey":"tab.providerManagement","href":"/Web/boarding/dda/arc/initialize.do?enterMode=providerManagementMode","f2f":"onClick_DealerAdministrationTab"},{"label":"Menu Registration Form","linkId":"link.fordOpenDealerRegistration","labelKey":"tab.fordOpenDealerRegistration","href":"/Web/boarding/dda/fordopendealerregistration/initialize.do","f2f":"onClick_DealerAdministrationTab"},{"label":"Users","linkId":"link.users","labelKey":"tab.users","href":"/Web/boarding/dda/initializeViewUsers.do","f2f":"onClick_DealerAdministrationTab"},{"label":"Contract Type Preference","linkId":"link.contractTypePreference","labelKey":"tab.contractTypePreference","href":"/Web/common/navigateToDealerAdmin.spring?action=contractTypePreference","f2f":null}]}]}];
+    }
+</script>
+	<script type="text/javascript" src="./credit_report_files/navigation-menu.js.download"></script>
+
+	<script type="text/x-handlebars-template" id="routeone-secondary-nav-template">
+		{{#each this}}    <li class="app-secondary-navigation">        {{> navigationLink navigationLink}}        {{#if subGroupings}}            <ul class="secondary-navigation-sub-menu" role="list">                {{#each subGroupings}}                    {{#each navigationLinks}}                        <li>{{> navigationLink this}}</li>                    {{/each}}                    {{#unless @last}}                        <li></li>                    {{/unless}}                {{/each}}            </ul>        {{/if}}    </li>{{/each}}
+	</script>
+
+	<div class="hidden-print secondary-navigation" role="navigation" aria-label="Secondary Navigation">
+		<ul class="hidden-print secondary-navigation-items"></ul>
+	</div>
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+        
+        
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="modal fade error-modal-popup" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">
+      </h4></div>
+      <div class="modal-body errorDialogText"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success error-modal-popup-ok">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript" src="./credit_report_files/errorModalPopup.js.download"></script>
+
+<script src="./credit_report_files/underscore-min.js.download"></script>
+
+
+
+
+
+
+
+<!--****JVM:cas-ui-jetty9-4-85795cdb5-ffr88****-->
+<!--****NAMESPACE:zone2****-->
+<!--****Timestamp:2025-05-28T00:19:36.520650564Z****-->
+<!--****j_username:MHARRIS7****-->
+<!--****THREAD:133039428****-->
+<!--****Request-Tracker:3da6a763-1734-4dc6-8179-f5f47ba4b05d****-->
+
+
+
+</body></html>

@@ -1,0 +1,26 @@
+{
+  "application": {
+    "name": "mohamad alhorani",
+    "dob": "03/10/1977",
+    "ssn": "283-25-1232",
+    "phone": "(313) 258-7083",
+    "email": "",
+    "residence": {
+      "address": "24833 hickory st, Dearborn, WAYNE, MI, 48124-2461",
+      "type": "Living w/relatives",
+      "monthly_rent": "$0.00",
+      "time_at_residence": "3 years 3 months"
+    },
+    "employment": {
+      "employer": "Jo Marble LLC",
+      "title": "Owner",
+      "status": "Full Time",
+      "employer_phone": "(313) 258-7083",
+      "time_at_job": "1 years 0 months"
+    },
+    "income": {
+      "gross_monthly": "$100,000.00 Yearly",
+      "other_income": ""
+    }
+  }
+}

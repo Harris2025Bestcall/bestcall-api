@@ -1,0 +1,41 @@
+{
+  "fico_score": 587,
+  "utilization": null,
+  "inquiries": [
+    {
+      "date": "5/29/25",
+      "subcode": "ALA04242956",
+      "subname": "WESTBORNCDJR"
+    },
+    {
+      "date": "10/28/24",
+      "subcode": "BNC06199555",
+      "subname": "BK OF AMER"
+    },
+    {
+      "date": "10/21/24",
+      "subcode": "BPC03575459",
+      "subname": "CAPITAL ONE"
+    }
+  ],
+  "tradelines": [
+    {
+      "creditor": "LUT IMMIGRAT",
+      "opened": "7/22",
+      "high_credit": "$6398",
+      "balance": "$3573",
+      "mop": "I01",
+      "remarks": null
+    },
+    {
+      "creditor": "BK OF AMER",
+      "opened": "5/23",
+      "high_credit": "$1124",
+      "balance": "$820",
+      "mop": "R01",
+      "remarks": null
+    }
+  ],
+  "collections": [],
+  "public_records": []
+}

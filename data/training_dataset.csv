@@ -1,0 +1,7 @@
+client_id,bank,fico_score,gross_monthly_income,predicted_approved,actual_approved,match
+client_012,ally,627,2500.0,True,False,False
+client_012,americredit,627,2500.0,True,True,True
+client_012,ally,627,2500.0,True,False,False
+client_012,americredit,627,2500.0,True,True,True
+client_012,ally,627,2500.0,True,False,False
+client_012,americredit,627,2500.0,True,True,True

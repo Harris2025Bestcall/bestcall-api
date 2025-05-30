@@ -1,0 +1,71 @@
+{
+  "client_id": "client_bc143f5d",
+  "application": {
+    "application": {
+      "name": "mohamad alhorani",
+      "dob": "03/10/1977",
+      "ssn": "283-25-1232",
+      "phone": "(313) 258-7083",
+      "email": "",
+      "residence": {
+        "address": "24833 hickory st, Dearborn, WAYNE, MI, 48124-2461",
+        "type": "Living w/relatives",
+        "monthly_rent": "$0.00",
+        "time_at_residence": "3 years 3 months"
+      },
+      "employment": {
+        "employer": "Jo Marble LLC",
+        "title": "Owner",
+        "status": "Full Time",
+        "employer_phone": "(313) 258-7083",
+        "time_at_job": "1 years 0 months"
+      },
+      "income": {
+        "gross_monthly": "$100,000.00 Yearly",
+        "other_income": ""
+      }
+    }
+  },
+  "credit_report": {
+    "fico_score": 587,
+    "utilization": null,
+    "inquiries": [
+      {
+        "date": "5/29/25",
+        "subcode": "ALA04242956",
+        "subname": "WESTBORNCDJR"
+      },
+      {
+        "date": "10/28/24",
+        "subcode": "BNC06199555",
+        "subname": "BK OF AMER"
+      },
+      {
+        "date": "10/21/24",
+        "subcode": "BPC03575459",
+        "subname": "CAPITAL ONE"
+      }
+    ],
+    "tradelines": [
+      {
+        "creditor": "LUT IMMIGRAT",
+        "opened": "7/22",
+        "high_credit": "$6398",
+        "balance": "$3573",
+        "mop": "I01",
+        "remarks": null
+      },
+      {
+        "creditor": "BK OF AMER",
+        "opened": "5/23",
+        "high_credit": "$1124",
+        "balance": "$820",
+        "mop": "R01",
+        "remarks": null
+      }
+    ],
+    "collections": [],
+    "public_records": []
+  },
+  "vehicle_match": null
+}
