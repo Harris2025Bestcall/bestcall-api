@@ -27,3 +27,4 @@ fastapi
 uvicorn
 python-dotenv
 supabase
+pdfplumber
