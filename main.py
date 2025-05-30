@@ -1,15 +1,13 @@
 from fastapi import FastAPI, UploadFile, File, Form, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
-import os
-import shutil
-import uuid
-import json
+import os, shutil, uuid, json
 import pandas as pd
 
 from dotenv import load_dotenv
 from supabase import create_client
 
+# Core logic modules
 from scripts.parse_credit_app_pdf_ai import extract_from_credit_app
 from scripts.parse_credit_report_pdf_ai import extract_from_credit_report
 from scripts.predict_approval_gpt import predict_approval
@@ -17,7 +15,7 @@ from scripts.predict_approval_from_json import predict_approval as predict_ml
 from scripts.train_from_actuals import train_from_actuals
 from scripts.analyze_approval_history_ai import summarize_training_log
 from scripts.predict_vehicle_match import match_vehicle_to_profile
-from utils.security import verify_key  # ✅ Security layer
+from utils.security import verify_key  # 🔐 API Key protection
 
 # Load environment variables
 load_dotenv()
@@ -25,7 +23,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Initialize app with global security
+# Initialize FastAPI app with global security
 app = FastAPI(dependencies=[Depends(verify_key)])
 
 app.add_middleware(
@@ -36,23 +34,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Root health check route
+# ✅ Health check
 @app.get("/")
 def root():
-    return {"message": "BestCall AI is live and secured."}
+    return {"message": "BestCall AI backend is live and secured."}
 
-# Admin upload portal
+# ✅ Admin portal UI
 @app.get("/admin", response_class=HTMLResponse)
-async def admin_portal():
+def admin_portal():
     with open("frontend/upload_portal.html", "r") as f:
         return f.read()
 
-# Training metrics summary
-@app.get("/metrics")
-async def get_metrics():
-    return summarize_training_log()
+# ✅ Client portal UI (NEW)
+@app.get("/client", response_class=HTMLResponse)
+def client_portal():
+    with open("frontend/client.html", "r") as f:
+        return f.read()
 
-# Upload credit app, credit report, and bank PDFs
+# ✅ Return inventory from Supabase/CSV
+@app.get("/inventory")
+def get_inventory():
+    try:
+        df = pd.read_csv("data/inventory/cleaned vehicle inventory.csv")
+        return df.to_dict(orient="records")
+    except Exception as e:
+        return {"error": str(e)}
+
+# ✅ Upload and predict (credit app + report)
 @app.post("/upload/")
 async def upload_files(
     credit_app: UploadFile = File(...),
@@ -64,14 +72,15 @@ async def upload_files(
     base_path = f"data/training_clients/{client_id}"
     os.makedirs(base_path, exist_ok=True)
 
+    # Save PDFs
     app_path = os.path.join(base_path, "credit_app.pdf")
     report_path = os.path.join(base_path, "credit_report.pdf")
-
     with open(app_path, "wb") as f:
         shutil.copyfileobj(credit_app.file, f)
     with open(report_path, "wb") as f:
         shutil.copyfileobj(credit_report.file, f)
 
+    # Parse content
     app_data = extract_from_credit_app(app_path, client_id)
     report_data = extract_from_credit_report(report_path, client_id)
 
@@ -81,35 +90,36 @@ async def upload_files(
         "credit_report": report_data,
     }
 
+    # Try vehicle match
+    try:
+        vehicle_match = match_vehicle_to_profile(base_path, supabase)
+    except Exception as e:
+        print("❌ Vehicle match failed:", e)
+        vehicle_match = None
+
+    merged["vehicle_match"] = vehicle_match
+
+    # Save profile
     profile_path = os.path.join(base_path, "client_profile.json")
     with open(profile_path, "w") as f:
         json.dump(merged, f, indent=2)
 
-    try:
-        vehicle_match = match_vehicle_to_profile(base_path, supabase)
-    except Exception as e:
-        vehicle_match = None
-        print("❌ Vehicle match failed:", e)
-
-    merged["vehicle_match"] = vehicle_match
-    with open(profile_path, "w") as f:
-        json.dump(merged, f, indent=2)
-
-    gpt_prediction = predict_approval(merged, base_path)
+    # Predict
+    gpt_result = predict_approval(merged, base_path)
     with open(os.path.join(base_path, "predicted_approval_summary.json"), "w") as f:
-        json.dump(gpt_prediction, f, indent=2)
+        json.dump(gpt_result, f, indent=2)
 
-    ml_prediction = predict_ml(client_id)
+    ml_result = predict_ml(client_id)
 
     return {
         "client_id": client_id,
-        "gpt_prediction": gpt_prediction,
-        "ml_prediction": ml_prediction,
+        "gpt_prediction": gpt_result,
+        "ml_prediction": ml_result,
         "vehicle_match": vehicle_match,
-        "approval_structure": gpt_prediction.get("approval_structure", {})
+        "approval_structure": gpt_result.get("approval_structure", {})
     }
 
-# Upload actual bank decisions after funding
+# ✅ Upload actual bank funding decision PDFs
 @app.post("/train/")
 async def upload_actuals(
     client_id: str = Form(...),
@@ -125,11 +135,7 @@ async def upload_actuals(
 
     return train_from_actuals(client_id)
 
-# Inventory view for deal structuring
-@app.get("/inventory")
-async def get_inventory():
-    try:
-        df = pd.read_csv("data/inventory/cleaned vehicle inventory.csv")
-        return df.to_dict(orient="records")
-    except Exception as e:
-        return {"error": str(e)}
+# ✅ View current model performance
+@app.get("/metrics")
+def get_metrics():
+    return summarize_training_log()
