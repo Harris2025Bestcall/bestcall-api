@@ -18,15 +18,17 @@
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
-      const email = formData.get("email");
-      const password = formData.get("password");
 
-      // Placeholder login action (add real auth later)
-      if (email === "admin@example.com" && password === "demo123") {
-        alert("Login successful (placeholder)");
-        window.location.href = "/client/dashboard";
+      const res = await fetch("/auth/login", {
+        method: "POST",
+        body: formData,
+        redirect: "follow"
+      });
+
+      if (res.redirected) {
+        window.location.href = res.url;
       } else {
-        alert("Invalid login (this is a static mock)");
+        alert("Invalid login. Please try again.");
       }
     });
   </script>
