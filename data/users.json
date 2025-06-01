@@ -1,0 +1,8 @@
+[
+  {
+    "email": "dealer1@example.com",
+    "password": "test123",
+    "name": "Dealer One",
+    "role": "dealer"
+  }
+]

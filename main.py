@@ -1,13 +1,17 @@
-from fastapi import FastAPI, UploadFile, File, Form, Depends
-from fastapi.responses import HTMLResponse
+# (Same header imports and setup as you shared before)
+from fastapi import FastAPI, UploadFile, File, Form, Depends, Request, Response, HTTPException, Cookie
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 import os, shutil, uuid, json
 import pandas as pd
-
+from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
+from typing import Optional
+import hashlib
 
-# Core logic modules
 from scripts.parse_credit_app_pdf_ai import extract_from_credit_app
 from scripts.parse_credit_report_pdf_ai import extract_from_credit_report
 from scripts.predict_approval_gpt import predict_approval
@@ -15,43 +19,125 @@ from scripts.predict_approval_from_json import predict_approval as predict_ml
 from scripts.train_from_actuals import train_from_actuals
 from scripts.analyze_approval_history_ai import summarize_training_log
 from scripts.predict_vehicle_match import match_vehicle_to_profile
-from utils.security import verify_key  # 🔐 API Key protection
+from utils.security import verify_key
 
-# Load environment variables
+# Load Supabase config
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Initialize FastAPI app with global security
+# Init FastAPI with global API key auth
 app = FastAPI(dependencies=[Depends(verify_key)])
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+templates = Jinja2Templates(directory="frontend/templates")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# === Session Auth Setup ===
+SESSION_COOKIE_NAME = "bestcall_session"
+USERS_FILE = "data/users.json"
 
-# ✅ Health check
-@app.get("/")
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def load_users():
+    if not os.path.exists(USERS_FILE):
+        return []
+    with open(USERS_FILE) as f:
+        return json.load(f)
+
+def save_users(users):
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f, indent=2)
+
+def get_current_user(session_id: Optional[str] = Cookie(None)):
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not logged in")
+    users = load_users()
+    for user in users:
+        if hash_password(user["email"]) == session_id:
+            return user
+    raise HTTPException(status_code=401, detail="Invalid session")
+
+# === Auth Routes ===
+@app.post("/auth/login")
+async def login(response: Response, email: str = Form(...), password: str = Form(...)):
+    users = load_users()
+    for user in users:
+        if user["email"] == email and user["password"] == hash_password(password):
+            session_id = hash_password(email)
+            res = RedirectResponse(url="/client/dashboard", status_code=302)
+            res.set_cookie(SESSION_COOKIE_NAME, session_id, httponly=True, max_age=3600)
+            return res
+    raise HTTPException(status_code=401, detail="Invalid login")
+
+@app.get("/logout")
+def logout():
+    res = RedirectResponse("/client/login", status_code=302)
+    res.delete_cookie(SESSION_COOKIE_NAME)
+    return res
+
+@app.post("/create_user")
+def create_user(email: str = Form(...), password: str = Form(...), name: str = Form(...)):
+    users = load_users()
+    if any(u["email"] == email for u in users):
+        raise HTTPException(status_code=400, detail="User already exists")
+    users.append({
+        "email": email,
+        "password": hash_password(password),
+        "name": name,
+        "role": "dealer"
+    })
+    save_users(users)
+    return {"status": "User created"}
+
+# === Client-Facing Routes (protected) ===
+@app.get("/", response_class=HTMLResponse)
 def root():
-    return {"message": "BestCall AI backend is live and secured."}
+    return {"message": "BestCall AI is live."}
 
-# ✅ Admin portal UI
-@app.get("/admin", response_class=HTMLResponse)
-def admin_portal():
-    with open("frontend/upload_portal.html", "r") as f:
-        return f.read()
+@app.get("/client/login", response_class=HTMLResponse)
+def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
 
-# ✅ Client portal UI (NEW)
-@app.get("/client", response_class=HTMLResponse)
-def client_portal():
-    with open("frontend/client.html", "r") as f:
-        return f.read()
+@app.get("/client/dashboard", response_class=HTMLResponse)
+def dashboard(request: Request, user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("dashboard.html", {"request": request})
 
-# ✅ Return inventory from Supabase/CSV
+@app.get("/client/history", response_class=HTMLResponse)
+def history_ui(request: Request, user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("history.html", {"request": request})
+
+@app.get("/client/inventory", response_class=HTMLResponse)
+def inventory_ui(request: Request, user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("inventory.html", {"request": request})
+
+@app.get("/client/results", response_class=HTMLResponse)
+def show_results(request: Request, client_id: str, user: dict = Depends(get_current_user)):
+    try:
+        base = f"data/training_clients/{client_id}"
+        with open(f"{base}/predicted_approval_summary.json") as f:
+            gpt = json.load(f)
+        with open(f"{base}/client_profile.json") as f:
+            profile = json.load(f)
+        ml = predict_ml(client_id)
+        return templates.TemplateResponse("results.html", {
+            "request": request,
+            "client_id": client_id,
+            "gpt_prediction": gpt,
+            "ml_prediction": ml,
+            "vehicle_match": profile.get("vehicle_match")
+        })
+    except Exception as e:
+        return templates.TemplateResponse("results.html", {
+            "request": request,
+            "client_id": client_id,
+            "gpt_prediction": {"error": str(e)},
+            "ml_prediction": {},
+            "vehicle_match": None
+        })
+
+# === API Endpoints ===
 @app.get("/inventory")
 def get_inventory():
     try:
@@ -60,82 +146,81 @@ def get_inventory():
     except Exception as e:
         return {"error": str(e)}
 
-# ✅ Upload and predict (credit app + report)
+@app.get("/history")
+def get_history():
+    base = "data/training_clients"
+    results = []
+    for cid in os.listdir(base):
+        try:
+            with open(f"{base}/{cid}/client_profile.json") as f:
+                profile = json.load(f)
+            with open(f"{base}/{cid}/predicted_approval_summary.json") as f:
+                gpt = json.load(f)
+            ml = predict_ml(cid)
+            timestamp = datetime.fromtimestamp(os.path.getctime(f"{base}/{cid}/client_profile.json"))
+            results.append({
+                "client_id": cid,
+                "vehicle_match": profile.get("vehicle_match"),
+                "gpt_prediction": gpt,
+                "ml_prediction": ml,
+                "timestamp": timestamp.strftime("%Y-%m-%d %H:%M")
+            })
+        except:
+            continue
+    return sorted(results, key=lambda x: x["timestamp"], reverse=True)
+
 @app.post("/upload/")
-async def upload_files(
+async def upload(
     credit_app: UploadFile = File(...),
     credit_report: UploadFile = File(...),
-    bank_summary: UploadFile = File(None),
-    bank_detail: UploadFile = File(None),
+    user: dict = Depends(get_current_user)
 ):
-    client_id = f"client_{str(uuid.uuid4())[:8]}"
-    base_path = f"data/training_clients/{client_id}"
-    os.makedirs(base_path, exist_ok=True)
+    cid = f"client_{uuid.uuid4().hex[:8]}"
+    base = f"data/training_clients/{cid}"
+    os.makedirs(base, exist_ok=True)
 
-    # Save PDFs
-    app_path = os.path.join(base_path, "credit_app.pdf")
-    report_path = os.path.join(base_path, "credit_report.pdf")
-    with open(app_path, "wb") as f:
-        shutil.copyfileobj(credit_app.file, f)
-    with open(report_path, "wb") as f:
-        shutil.copyfileobj(credit_report.file, f)
+    app_path = os.path.join(base, "credit_app.pdf")
+    rep_path = os.path.join(base, "credit_report.pdf")
+    with open(app_path, "wb") as f: shutil.copyfileobj(credit_app.file, f)
+    with open(rep_path, "wb") as f: shutil.copyfileobj(credit_report.file, f)
 
-    # Parse content
-    app_data = extract_from_credit_app(app_path, client_id)
-    report_data = extract_from_credit_report(report_path, client_id)
+    app_data = extract_from_credit_app(app_path, cid)
+    report_data = extract_from_credit_report(rep_path, cid)
+    merged = {"client_id": cid, "application": app_data, "credit_report": report_data}
 
-    merged = {
-        "client_id": client_id,
-        "application": app_data,
-        "credit_report": report_data,
-    }
-
-    # Try vehicle match
     try:
-        vehicle_match = match_vehicle_to_profile(base_path, supabase)
-    except Exception as e:
-        print("❌ Vehicle match failed:", e)
-        vehicle_match = None
+        merged["vehicle_match"] = match_vehicle_to_profile(base, supabase)
+    except:
+        merged["vehicle_match"] = None
 
-    merged["vehicle_match"] = vehicle_match
-
-    # Save profile
-    profile_path = os.path.join(base_path, "client_profile.json")
-    with open(profile_path, "w") as f:
+    with open(os.path.join(base, "client_profile.json"), "w") as f:
         json.dump(merged, f, indent=2)
 
-    # Predict
-    gpt_result = predict_approval(merged, base_path)
-    with open(os.path.join(base_path, "predicted_approval_summary.json"), "w") as f:
-        json.dump(gpt_result, f, indent=2)
-
-    ml_result = predict_ml(client_id)
+    gpt = predict_approval(merged, base)
+    with open(os.path.join(base, "predicted_approval_summary.json"), "w") as f:
+        json.dump(gpt, f, indent=2)
 
     return {
-        "client_id": client_id,
-        "gpt_prediction": gpt_result,
-        "ml_prediction": ml_result,
-        "vehicle_match": vehicle_match,
-        "approval_structure": gpt_result.get("approval_structure", {})
+        "client_id": cid,
+        "gpt_prediction": gpt,
+        "ml_prediction": predict_ml(cid),
+        "vehicle_match": merged["vehicle_match"],
+        "approval_structure": gpt.get("approval_structure", {})
     }
 
-# ✅ Upload actual bank funding decision PDFs
 @app.post("/train/")
 async def upload_actuals(
     client_id: str = Form(...),
-    files: list[UploadFile] = File(...)
+    files: list[UploadFile] = File(...),
+    user: dict = Depends(get_current_user)
 ):
-    base_path = f"data/training_clients/{client_id}/actual_bank_decisions"
-    os.makedirs(base_path, exist_ok=True)
-
+    base = f"data/training_clients/{client_id}/actual_bank_decisions"
+    os.makedirs(base, exist_ok=True)
     for i, file in enumerate(files):
-        save_path = os.path.join(base_path, f"decision_{i}.pdf")
-        with open(save_path, "wb") as f:
+        with open(os.path.join(base, f"decision_{i}.pdf"), "wb") as f:
             shutil.copyfileobj(file.file, f)
-
     return train_from_actuals(client_id)
 
-# ✅ View current model performance
 @app.get("/metrics")
 def get_metrics():
     return summarize_training_log()

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2 class="page-title">Prediction Results</h2>
+
+  <div class="results-grid">
+    <!-- GPT Prediction -->
+    <div class="card">
+      <h3>✅ GPT Approval Structure</h3>
+      {% if gpt_prediction %}
+        <ul>
+          {% for key, value in gpt_prediction.items() %}
+            <li><strong>{{ key.replace('_', ' ').title() }}:</strong> {{ value }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No GPT prediction available.</p>
+      {% endif %}
+    </div>
+
+    <!-- ML Prediction -->
+    <div class="card">
+      <h3>📊 ML Prediction</h3>
+      {% if ml_prediction %}
+        <ul>
+          {% for key, value in ml_prediction.items() %}
+            <li><strong>{{ key.replace('_', ' ').title() }}:</strong> {{ value }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No ML prediction available.</p>
+      {% endif %}
+    </div>
+
+    <!-- Vehicle Match -->
+    <div class="card full-width">
+      <h3>🚗 Vehicle Match Recommendation</h3>
+      {% if vehicle_match %}
+        <table class="inventory-table">
+          <tr>
+            <th>Year</th><th>Make</th><th>Model</th><th>Retail</th><th>Book</th><th>Cost</th>
+          </tr>
+          <tr>
+            <td>{{ vehicle_match.year }}</td>
+            <td>{{ vehicle_match.make }}</td>
+            <td>{{ vehicle_match.model }}</td>
+            <td>${{ vehicle_match.retail_price }}</td>
+            <td>${{ vehicle_match.book_value }}</td>
+            <td>${{ vehicle_match.dealer_cost }}</td>
+          </tr>
+        </table>
+      {% else %}
+        <p>No vehicle match found.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="button-group">
+    <a href="/client/dashboard"><button>Start New Review</button></a>
+  </div>
+{% endblock %}

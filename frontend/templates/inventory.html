@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2 class="page-title">Dealer Inventory</h2>
+
+  <div class="card full-width">
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search vehicle inventory..."
+      class="search-bar"
+    />
+    <br><br>
+
+    <table class="inventory-table" id="inventoryTable">
+      <thead>
+        <tr>
+          <th>Year</th>
+          <th>Make</th>
+          <th>Model</th>
+          <th>Retail</th>
+          <th>Book</th>
+          <th>Cost</th>
+          <th>Days on Lot</th>
+          <th>Times Matched</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    async function fetchInventory() {
+      const res = await fetch("/inventory", {
+        headers: { "x-api-key": "your-api-key-here" }
+      });
+      const data = await res.json();
+
+      const tableBody = document.querySelector("#inventoryTable tbody");
+      tableBody.innerHTML = "";
+
+      data.forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${item.year}</td>
+          <td>${item.make}</td>
+          <td>${item.model}</td>
+          <td>$${item.retail_price}</td>
+          <td>$${item.book_value}</td>
+          <td>$${item.dealer_cost}</td>
+          <td>${item.days_on_lot}</td>
+          <td>${item.times_matched}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    document.getElementById("searchInput").addEventListener("input", function () {
+      const filter = this.value.toLowerCase();
+      const rows = document.querySelectorAll("#inventoryTable tbody tr");
+      rows.forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
+      });
+    });
+
+    fetchInventory();
+  </script>
+{% endblock %}

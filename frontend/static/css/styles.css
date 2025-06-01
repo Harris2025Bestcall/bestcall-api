@@ -1,0 +1,152 @@
+/* Global Styling */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f9f9fb;
+  margin: 0;
+  padding: 0;
+  color: #222;
+}
+
+h1, h2, h3 {
+  margin-top: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Header / Navbar */
+header {
+  background-color: #20232a;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+nav a {
+  color: white;
+  margin-left: 2rem;
+  font-weight: 500;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+/* Page Layout */
+main {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+/* Cards & Grid */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+}
+
+.card.full-width {
+  grid-column: span 2;
+}
+
+/* Forms */
+form input[type="file"],
+.search-bar {
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+form label {
+  font-weight: 500;
+  display: block;
+  margin-top: 1rem;
+}
+
+/* Button Styles */
+button {
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+
+button:hover {
+  background-color: #005bd1;
+}
+
+.button-group {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+/* Tables */
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.inventory-table th,
+.inventory-table td {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.inventory-table th {
+  background-color: #f1f1f1;
+  font-weight: 600;
+}
+
+/* Responsive fallback */
+@media (max-width: 768px) {
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card.full-width {
+    grid-column: span 1;
+  }
+
+  nav a {
+    margin-left: 1rem;
+  }
+
+  button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2 class="page-title">Review History</h2>
+
+  <div class="card full-width">
+    <table class="inventory-table" id="historyTable">
+      <thead>
+        <tr>
+          <th>Client ID</th>
+          <th>Suggested Bank</th>
+          <th>Match Found</th>
+          <th>Recommended Vehicle</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    async function fetchHistory() {
+      const res = await fetch("/history", {
+        headers: { "x-api-key": "your-api-key-here" }
+      });
+      const data = await res.json();
+
+      const tableBody = document.querySelector("#historyTable tbody");
+      tableBody.innerHTML = "";
+
+      data.forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${item.client_id}</td>
+          <td>${item.gpt_prediction?.recommended_bank || '-'}</td>
+          <td>${item.ml_prediction?.match === true ? '✅ Yes' : '❌ No'}</td>
+          <td>${item.vehicle_match?.make || '-'} ${item.vehicle_match?.model || ''}</td>
+          <td>${item.timestamp}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    fetchHistory();
+  </script>
+{% endblock %}

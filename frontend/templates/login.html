@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2 class="page-title">Login</h2>
+
+  <div class="card full-width">
+    <form id="loginForm">
+      <label>Email</label>
+      <input type="email" name="email" required /><br><br>
+
+      <label>Password</label>
+      <input type="password" name="password" required /><br><br>
+
+      <button type="submit">Log In</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const email = formData.get("email");
+      const password = formData.get("password");
+
+      // Placeholder login action (add real auth later)
+      if (email === "admin@example.com" && password === "demo123") {
+        alert("Login successful (placeholder)");
+        window.location.href = "/client/dashboard";
+      } else {
+        alert("Invalid login (this is a static mock)");
+      }
+    });
+  </script>
+{% endblock %}
