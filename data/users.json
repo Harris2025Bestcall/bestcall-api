@@ -4,5 +4,11 @@
     "password": "ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae",
     "name": "Dealer One",
     "role": "dealer"
+  },
+  {
+    "email": "admin@bestcall.ai",
+    "password": "6c3058c3ac1cfac8c4a953290d7ad3c8fd5b7d5e86e24a304a137f24f9a8e5ae",
+    "name": "System Admin",
+    "role": "admin"
   }
 ]
