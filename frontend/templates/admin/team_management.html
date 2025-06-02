@@ -5,87 +5,44 @@
 {% block content %}
   <h1>Team Management</h1>
 
-  <h3>Create New User</h3>
-  <form onsubmit="createUser(event)">
-    <label>Email:</label><br />
-    <input type="email" id="email" required /><br />
-
-    <label>Name:</label><br />
-    <input type="text" id="name" required /><br />
-
-    <label>Password:</label><br />
-    <input type="password" id="password" required /><br /><br />
-
+  <form id="createUserForm">
+    <h3>Create New User</h3>
+    <label>Name:</label><br>
+    <input type="text" name="name" required><br>
+    <label>Email:</label><br>
+    <input type="email" name="email" required><br>
+    <label>Password:</label><br>
+    <input type="password" name="password" required><br><br>
     <button type="submit">Create User</button>
   </form>
 
-  <p id="userStatus" style="margin-top: 10px;"></p>
-
-  <hr />
-
-  <h3>All Users</h3>
-  <table border="1" id="userTable">
-    <thead>
-      <tr>
-        <th>Email</th>
-        <th>Name</th>
-        <th>Role</th>
-      </tr>
-    </thead>
-    <tbody id="userList">
-      <tr><td colspan="3">Loading...</td></tr>
-    </tbody>
-  </table>
+  <div id="createUserStatus" style="margin-top: 10px;"></div>
 
   <script>
-    async function createUser(event) {
-      event.preventDefault();
+    const form = document.getElementById("createUserForm");
+    const statusBox = document.getElementById("createUserStatus");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
       const token = localStorage.getItem("access_token");
-      const formData = new FormData();
-      formData.append("email", document.getElementById("email").value);
-      formData.append("name", document.getElementById("name").value);
-      formData.append("password", document.getElementById("password").value);
 
       const res = await fetch("/create_user", {
         method: "POST",
-        body: formData,
-        headers: { Authorization: "Bearer " + token }
+        headers: {
+          Authorization: "Bearer " + token
+        },
+        body: formData
       });
 
+      const data = await res.json();
       if (res.ok) {
-        document.getElementById("userStatus").innerText = "✅ User created.";
-        loadUsers();
+        statusBox.innerText = "✅ User created successfully.";
+        form.reset();
       } else {
-        const err = await res.json();
-        document.getElementById("userStatus").innerText = `❌ ${err.detail}`;
+        statusBox.innerText = "❌ " + (data.detail || "Error creating user.");
       }
-    }
-
-    async function loadUsers() {
-      const token = localStorage.getItem("access_token");
-      try {
-        const res = await fetch("/admin/users", {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const users = await res.json();
-
-        const tbody = document.getElementById("userList");
-        tbody.innerHTML = "";
-
-        for (const u of users) {
-          tbody.innerHTML += `
-            <tr>
-              <td>${u.email}</td>
-              <td>${u.name}</td>
-              <td>${u.role}</td>
-            </tr>
-          `;
-        }
-      } catch {
-        document.getElementById("userList").innerHTML = "<tr><td colspan='3'>Failed to load users.</td></tr>";
-      }
-    }
-
-    loadUsers();
+    });
   </script>
 {% endblock %}

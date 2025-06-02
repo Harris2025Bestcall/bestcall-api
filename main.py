@@ -35,7 +35,6 @@ templates = Jinja2Templates(directory="frontend/templates")
 
 USERS_FILE = "data/users.json"
 
-# -------------------- AUTH HELPERS --------------------
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -70,8 +69,6 @@ def get_current_user(authorization: str = Header(...)):
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-# -------------------- ROUTES --------------------
-
 @app.get("/")
 def root():
     return JSONResponse(content={"message": "BestCall AI is live."})
@@ -83,7 +80,11 @@ async def login(email: str = Form(...), password: str = Form(...)):
     for user in users:
         if user["email"] == email and user["password"] == hashed:
             token = create_token({"sub": email})
-            return {"access_token": token, "token_type": "bearer"}
+            return {
+                "access_token": token,
+                "token_type": "bearer",
+                "role": user.get("role", "dealer")
+            }
     raise HTTPException(status_code=401, detail="Invalid login")
 
 @app.post("/create_user")
@@ -214,7 +215,6 @@ async def upload_actuals(client_id: str = Form(...), files: list[UploadFile] = F
 def get_metrics():
     return summarize_training_log()
 
-# ---- Admin System Ops ----
 @app.get("/system-operations", response_class=HTMLResponse)
 def system_ops_home(request: Request, user: dict = Depends(get_current_user)):
     return templates.TemplateResponse("admin/system_ops.html", {"request": request})

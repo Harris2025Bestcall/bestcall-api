@@ -3,69 +3,46 @@
 {% block title %}AI Performance Logs - BestCall AI{% endblock %}
 
 {% block content %}
-  <h1>AI Performance Logs</h1>
+  <h1>AI Model Performance</h1>
 
-  <table border="1" style="margin-top: 20px;" id="logTable">
-    <thead>
-      <tr>
-        <th>Client ID</th>
-        <th>Timestamp</th>
-        <th>Matched</th>
-        <th>Total</th>
-        <th>Accuracy</th>
-        <th>Details</th>
-      </tr>
-    </thead>
-    <tbody id="logBody">
-      <tr><td colspan="6">Loading...</td></tr>
-    </tbody>
-  </table>
+  <div id="logContainer">
+    <p>Loading performance logs...</p>
+  </div>
 
   <script>
-    async function loadLogs() {
+    async function loadPerformanceLogs() {
       const token = localStorage.getItem("access_token");
-      if (!token) {
-        alert("Not authenticated");
-        window.location.href = "/client/login";
+      const res = await fetch("/admin/performance/data", {
+        headers: {
+          Authorization: "Bearer " + token
+        }
+      });
+
+      if (!res.ok) {
+        document.getElementById("logContainer").innerText = "Failed to load performance data.";
         return;
       }
 
-      try {
-        const res = await fetch("/admin/performance/data", {
-          headers: {
-            Authorization: "Bearer " + token
-          }
-        });
-
-        if (!res.ok) throw new Error("Failed to load logs");
-        const data = await res.json();
-
-        const tbody = document.getElementById("logBody");
-        tbody.innerHTML = "";
-
-        data.forEach(entry => {
-          const row = `
-            <tr>
-              <td>${entry.client_id}</td>
-              <td>${entry.timestamp || "—"}</td>
-              <td>${entry.matched}</td>
-              <td>${entry.total}</td>
-              <td>${entry.accuracy}</td>
-              <td><pre style="white-space:pre-wrap">${JSON.stringify(entry.details, null, 2)}</pre></td>
-            </tr>
-          `;
-          tbody.innerHTML += row;
-        });
-
-        if (data.length === 0) {
-          tbody.innerHTML = "<tr><td colspan='6'>No logs found.</td></tr>";
-        }
-
-      } catch (err) {
-        document.getElementById("logBody").innerHTML = `<tr><td colspan="6">${err.message}</td></tr>`;
+      const logs = await res.json();
+      if (!logs.length) {
+        document.getElementById("logContainer").innerHTML = "<p>No logs available.</p>";
+        return;
       }
+
+      let html = "<table border='1'><tr><th>Client ID</th><th>Matched</th><th>Total</th><th>Accuracy</th></tr>";
+      for (const log of logs) {
+        html += `<tr>
+                   <td>${log.client_id}</td>
+                   <td>${log.matched}</td>
+                   <td>${log.total}</td>
+                   <td>${log.accuracy}</td>
+                 </tr>`;
+      }
+      html += "</table>";
+
+      document.getElementById("logContainer").innerHTML = html;
     }
 
-    loadLogs();
+    loadPerformanceLogs();
   </script>
 {% endblock %}

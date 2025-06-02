@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>{% block title %}Admin - BestCall AI{% endblock %}</title>
+  <title>{% block title %}BestCall AI Admin{% endblock %}</title>
 </head>
 <body>
   <nav>
@@ -15,18 +15,14 @@
     <button onclick="logout()">Logout</button>
   </nav>
 
+  <hr />
+
   <div id="content">
     {% block content %}{% endblock %}
   </div>
 
   <script>
     function goTo(path) {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        alert("Not authenticated");
-        window.location.href = "/client/login";
-        return;
-      }
       window.location.href = path;
     }
 
@@ -35,5 +31,8 @@
       window.location.href = "/client/login";
     }
   </script>
+
+  <!-- Shared admin token logic -->
+  <script src="/static/js/admin.js"></script>
 </body>
 </html>

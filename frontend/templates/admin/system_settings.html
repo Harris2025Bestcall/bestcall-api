@@ -3,68 +3,14 @@
 {% block title %}System Settings - BestCall AI{% endblock %}
 
 {% block content %}
-  <h1>Platform-Wide System Settings</h1>
+  <h1>System Settings</h1>
 
-  <form onsubmit="saveSystemSettings(event)">
-    <label>Default AI Confidence Threshold (%):</label><br />
-    <input type="number" id="confidence" min="0" max="100" value="80" /><br /><br />
+  <ul>
+    <li><strong>Model Refresh Interval:</strong> On demand via training uploads</li>
+    <li><strong>Inventory Sync:</strong> Manual via CSV upload (Supabase enabled)</li>
+    <li><strong>Version:</strong> BestCall AI v3.0</li>
+    <li><strong>API Key Access:</strong> Disabled (token-based auth now required)</li>
+  </ul>
 
-    <label>Retrain Frequency:</label><br />
-    <select id="retrain_freq">
-      <option value="manual">Manual</option>
-      <option value="daily">Daily</option>
-      <option value="weekly">Weekly</option>
-    </select><br /><br />
-
-    <label>Upload File Limit (MB):</label><br />
-    <input type="number" id="upload_limit" value="10" /><br /><br />
-
-    <label>
-      <input type="checkbox" id="enable_email" checked /> Enable Email Notifications
-    </label><br />
-    <label>
-      <input type="checkbox" id="enable_push" /> Enable Push Notifications
-    </label><br /><br />
-
-    <label>Platform Branding (optional):</label><br />
-    <input type="text" id="brand_name" placeholder="BestCall AI" /><br />
-    <input type="text" id="theme_color" placeholder="#1a1a1a" /><br /><br />
-
-    <button type="submit">Save Settings</button>
-    <p id="saveStatus" style="margin-top: 10px;"></p>
-  </form>
-
-  <script>
-    async function saveSystemSettings(event) {
-      event.preventDefault();
-      const token = localStorage.getItem("access_token");
-
-      const settings = {
-        confidence_threshold: document.getElementById("confidence").value,
-        retrain_freq: document.getElementById("retrain_freq").value,
-        upload_limit_mb: document.getElementById("upload_limit").value,
-        email_enabled: document.getElementById("enable_email").checked,
-        push_enabled: document.getElementById("enable_push").checked,
-        branding: {
-          name: document.getElementById("brand_name").value,
-          color: document.getElementById("theme_color").value
-        }
-      };
-
-      const res = await fetch("/admin/system-settings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token
-        },
-        body: JSON.stringify(settings)
-      });
-
-      if (res.ok) {
-        document.getElementById("saveStatus").innerText = "✅ Settings updated.";
-      } else {
-        document.getElementById("saveStatus").innerText = "❌ Failed to update settings.";
-      }
-    }
-  </script>
+  <p style="margin-top: 20px;"><em>Editable settings and toggles will be added as the system evolves.</em></p>
 {% endblock %}

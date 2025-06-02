@@ -3,97 +3,17 @@
 {% block title %}Dealership Portals - BestCall AI{% endblock %}
 
 {% block content %}
-  <h1>Manage Dealership Portals</h1>
+  <h1>Dealership Portals</h1>
 
-  <h3>Create New Portal</h3>
-  <form onsubmit="createPortal(event)">
-    <label>Dealership Name:</label><br />
-    <input type="text" id="dealer_name" required /><br />
+  <p>This section will eventually allow admins to:</p>
+  <ul>
+    <li>View a list of all active dealership portals</li>
+    <li>Assign users to specific dealerships</li>
+    <li>Set inventory and submission permissions</li>
+    <li>Trigger onboarding AI training for new dealers</li>
+  </ul>
 
-    <label>City/State:</label><br />
-    <input type="text" id="location" required /><br />
-
-    <label>Industry:</label><br />
-    <input type="text" id="industry" value="Automotive" /><br /><br />
-
-    <button type="submit">Create Portal</button>
-  </form>
-
-  <p id="portalStatus" style="margin-top: 10px;"></p>
-
-  <hr />
-
-  <h3>Existing Portals</h3>
-  <table border="1" id="portalTable">
-    <thead>
-      <tr>
-        <th>Dealership Name</th>
-        <th>City/State</th>
-        <th>Industry</th>
-        <th>Users</th>
-      </tr>
-    </thead>
-    <tbody id="portalList">
-      <tr><td colspan="4">Loading...</td></tr>
-    </tbody>
-  </table>
-
-  <script>
-    async function createPortal(event) {
-      event.preventDefault();
-      const token = localStorage.getItem("access_token");
-
-      const body = {
-        name: document.getElementById("dealer_name").value,
-        location: document.getElementById("location").value,
-        industry: document.getElementById("industry").value
-      };
-
-      const res = await fetch("/admin/dealers/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token
-        },
-        body: JSON.stringify(body)
-      });
-
-      if (res.ok) {
-        document.getElementById("portalStatus").innerText = "✅ Portal created.";
-        loadPortals();
-      } else {
-        const err = await res.json();
-        document.getElementById("portalStatus").innerText = `❌ ${err.detail}`;
-      }
-    }
-
-    async function loadPortals() {
-      const token = localStorage.getItem("access_token");
-
-      try {
-        const res = await fetch("/admin/dealers", {
-          headers: { Authorization: "Bearer " + token }
-        });
-
-        const portals = await res.json();
-        const tbody = document.getElementById("portalList");
-        tbody.innerHTML = "";
-
-        for (const p of portals) {
-          tbody.innerHTML += `
-            <tr>
-              <td>${p.name}</td>
-              <td>${p.location}</td>
-              <td>${p.industry}</td>
-              <td>${p.users?.length || 0}</td>
-            </tr>
-          `;
-        }
-      } catch {
-        document.getElementById("portalList").innerHTML = "<tr><td colspan='4'>Failed to load portals.</td></tr>";
-      }
-    }
-
-    loadPortals();
-  </script>
+  <div style="margin-top: 20px;">
+    <p><em>Feature in development — coming soon.</em></p>
+  </div>
 {% endblock %}
