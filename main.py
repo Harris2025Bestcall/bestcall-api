@@ -1,8 +1,10 @@
-from fastapi import FastAPI, UploadFile, File, Form, Depends, Request, Response, HTTPException, Cookie
+from fastapi import FastAPI, UploadFile, File, Form, Depends, Request, Response, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware  # ✅ Fixed import
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+
 import os, shutil, uuid, json, hashlib
 import pandas as pd
 from datetime import datetime
@@ -19,19 +21,22 @@ from scripts.analyze_approval_history_ai import summarize_training_log
 from scripts.predict_vehicle_match import match_vehicle_to_profile
 from utils.security import verify_key
 
+# Load env variables
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# App setup
 app = FastAPI()
+app.add_middleware(SessionMiddleware, secret_key="super-secret-key")  # ✅ Replace with env var in production
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 templates = Jinja2Templates(directory="frontend/templates")
 
-SESSION_COOKIE_NAME = "bestcall_session"
 USERS_FILE = "data/users.json"
 
+# User session + hashing utils
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -45,39 +50,31 @@ def save_users(users):
     with open(USERS_FILE, "w") as f:
         json.dump(users, f, indent=2)
 
-def get_current_user(session_id: Optional[str] = Cookie(None)):
-    if not session_id:
+def get_current_user(request: Request):
+    email = request.session.get("user")
+    if not email:
         raise HTTPException(status_code=401, detail="Not logged in")
     users = load_users()
     for user in users:
-        if hash_password(user["email"]) == session_id:
+        if user["email"] == email:
             return user
     raise HTTPException(status_code=401, detail="Invalid session")
 
+# Auth routes
 @app.post("/auth/login")
-async def login(response: Response, email: str = Form(...), password: str = Form(...)):
+async def login(request: Request, email: str = Form(...), password: str = Form(...)):
     users = load_users()
-    input_hash = hash_password(password)
+    hashed = hash_password(password)
     for user in users:
-        if user["email"] == email and user["password"] == input_hash:
-            session_id = hash_password(email)
-            res = RedirectResponse(url="/client/dashboard", status_code=302)
-            res.set_cookie(
-                SESSION_COOKIE_NAME,
-                session_id,
-                httponly=True,
-                max_age=3600,
-                secure=True,
-                samesite="none"
-            )
-            return res
+        if user["email"] == email and user["password"] == hashed:
+            request.session["user"] = email
+            return RedirectResponse(url="/client/dashboard", status_code=302)
     raise HTTPException(status_code=401, detail="Invalid login")
 
 @app.get("/logout")
-def logout():
-    res = RedirectResponse("/client/login", status_code=302)
-    res.delete_cookie(SESSION_COOKIE_NAME)
-    return res
+def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse("/client/login", status_code=302)
 
 @app.post("/create_user")
 def create_user(email: str = Form(...), password: str = Form(...), name: str = Form(...)):
@@ -93,6 +90,7 @@ def create_user(email: str = Form(...), password: str = Form(...), name: str = F
     save_users(users)
     return {"status": "User created"}
 
+# UI routes
 @app.get("/", response_class=HTMLResponse)
 def root():
     return JSONResponse({"message": "BestCall AI is live."})
@@ -138,6 +136,7 @@ def show_results(request: Request, client_id: str, user: dict = Depends(get_curr
             "vehicle_match": None
         })
 
+# API routes
 @app.get("/inventory")
 def get_inventory():
     try:
@@ -170,11 +169,7 @@ def get_history():
     return JSONResponse(content=sorted(results, key=lambda x: x["timestamp"], reverse=True))
 
 @app.post("/upload/")
-async def upload(
-    credit_app: UploadFile = File(...),
-    credit_report: UploadFile = File(...),
-    user: dict = Depends(get_current_user)
-):
+async def upload(request: Request, credit_app: UploadFile = File(...), credit_report: UploadFile = File(...), user: dict = Depends(get_current_user)):
     cid = f"client_{uuid.uuid4().hex[:8]}"
     base = f"data/training_clients/{cid}"
     os.makedirs(base, exist_ok=True)
@@ -209,11 +204,7 @@ async def upload(
     })
 
 @app.post("/train/")
-async def upload_actuals(
-    client_id: str = Form(...),
-    files: list[UploadFile] = File(...),
-    user: dict = Depends(get_current_user)
-):
+async def upload_actuals(request: Request, client_id: str = Form(...), files: list[UploadFile] = File(...), user: dict = Depends(get_current_user)):
     base = f"data/training_clients/{client_id}/actual_bank_decisions"
     os.makedirs(base, exist_ok=True)
     for i, file in enumerate(files):
