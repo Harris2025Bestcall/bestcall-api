@@ -215,28 +215,29 @@ async def upload_actuals(client_id: str = Form(...), files: list[UploadFile] = F
 def get_metrics():
     return summarize_training_log()
 
+# Admin routes no longer enforce token at route-level — frontend JS validates it
 @app.get("/system-operations", response_class=HTMLResponse)
-def system_ops_home(request: Request, user: dict = Depends(get_current_user)):
+def system_ops_home(request: Request):
     return templates.TemplateResponse("admin/system_ops.html", {"request": request})
 
 @app.get("/system-operations/performance", response_class=HTMLResponse)
-def system_ops_performance(request: Request, user: dict = Depends(get_current_user)):
+def system_ops_performance(request: Request):
     return templates.TemplateResponse("admin/ai_performance.html", {"request": request})
 
 @app.get("/system-operations/team", response_class=HTMLResponse)
-def system_ops_team(request: Request, user: dict = Depends(get_current_user)):
+def system_ops_team(request: Request):
     return templates.TemplateResponse("admin/team_management.html", {"request": request})
 
 @app.get("/system-operations/security", response_class=HTMLResponse)
-def system_ops_security(request: Request, user: dict = Depends(get_current_user)):
+def system_ops_security(request: Request):
     return templates.TemplateResponse("admin/security_access.html", {"request": request})
 
 @app.get("/system-operations/dealers", response_class=HTMLResponse)
-def system_ops_dealers(request: Request, user: dict = Depends(get_current_user)):
+def system_ops_dealers(request: Request):
     return templates.TemplateResponse("admin/dealership_portals.html", {"request": request})
 
 @app.get("/system-operations/settings", response_class=HTMLResponse)
-def system_ops_settings(request: Request, user: dict = Depends(get_current_user)):
+def system_ops_settings(request: Request):
     return templates.TemplateResponse("admin/system_settings.html", {"request": request})
 
 @app.get("/admin/performance/data")
