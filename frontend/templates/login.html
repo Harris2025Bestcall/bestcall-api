@@ -1,44 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - BestCall AI</title>
+  <meta charset="UTF-8">
+  <title>Login to BestCall AI</title>
 </head>
 <body>
-  <h2>Login to BestCall AI</h2>
-  <form onsubmit="login(event)">
-    <input type="email" id="email" placeholder="Email" required /><br />
-    <input type="password" id="password" placeholder="Password" required /><br />
+  <h1>Login to BestCall AI</h1>
+
+  <form>
+    <input type="email" name="email" placeholder="Email" required><br><br>
+    <input type="password" name="password" placeholder="Password" required><br><br>
     <button type="submit">Login</button>
   </form>
-  <div id="error" style="color:red; margin-top: 10px;"></div>
+
+  <div id="loginStatus" style="margin-top: 10px; color: red;"></div>
 
   <script>
-    async function login(event) {
-      event.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+    const form = document.querySelector("form");
+    const statusBox = document.getElementById("loginStatus");
 
-      const formData = new FormData();
-      formData.append("email", email);
-      formData.append("password", password);
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      statusBox.innerText = "";
 
-      try {
-        const res = await fetch("/auth/login", {
-          method: "POST",
-          body: formData,
-        });
+      const formData = new FormData(form);
+      const res = await fetch("/auth/login", {
+        method: "POST",
+        body: formData
+      });
 
-        if (!res.ok) throw new Error("Invalid login credentials");
+      const data = await res.json();
 
-        const data = await res.json();
+      if (res.ok) {
         localStorage.setItem("access_token", data.access_token);
-        window.location.href = "/client/dashboard";
-      } catch (err) {
-        document.getElementById("error").innerText = err.message;
+
+        if (data.role === "admin") {
+          window.location.href = "/system-operations";
+        } else {
+          window.location.href = "/client/dashboard";
+        }
+      } else {
+        statusBox.innerText = data.detail || "Login failed";
       }
-    }
+    });
   </script>
 </body>
 </html>
