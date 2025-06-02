@@ -27,14 +27,14 @@
   </table>
 
   <script>
-    async function loadInventory() {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        alert("Not authenticated");
-        window.location.href = "/client/login";
-        return;
-      }
+    const token = localStorage.getItem("access_token");
 
+    if (!token) {
+      alert("You're not logged in.");
+      window.location.href = "/client/login";
+    }
+
+    async function loadInventory() {
       try {
         const res = await fetch("/inventory", {
           method: "GET",
@@ -64,7 +64,7 @@
           `;
         }
       } catch (err) {
-        document.getElementById("inventoryBody").innerHTML = `<tr><td colspan="8">${err.message}</td></tr>`;
+        document.getElementById("inventoryBody").innerHTML = `<tr><td colspan="8">❌ ${err.message}</td></tr>`;
       }
     }
 

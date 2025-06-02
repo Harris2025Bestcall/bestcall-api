@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Client Results - BestCall AI</title>
+  <meta charset="UTF-8" />
+  <title>Prediction Results - BestCall AI</title>
 </head>
 <body>
   <h1>Prediction Results for Client: {{ client_id }}</h1>
@@ -22,7 +22,7 @@
   </section>
 
   <section>
-    <h2>Matched Vehicle (if any)</h2>
+    <h2>Matched Vehicle</h2>
     {% if vehicle_match %}
       <pre>{{ vehicle_match | tojson(indent=2) }}</pre>
     {% else %}
@@ -34,6 +34,12 @@
   <button onclick="goBack()">⬅ Back to History</button>
 
   <script>
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      alert("You're not logged in.");
+      window.location.href = "/client/login";
+    }
+
     function goBack() {
       window.location.href = "/client/history";
     }

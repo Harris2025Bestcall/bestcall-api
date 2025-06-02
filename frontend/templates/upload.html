@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Start Review - BestCall AI</title>
 </head>
 <body>
@@ -20,14 +20,15 @@
   <div id="result" style="margin-top: 20px;"></div>
 
   <script>
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      alert("You're not logged in.");
+      window.location.href = "/client/login";
+    }
+
     async function submitForm(event) {
       event.preventDefault();
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        alert("Not authenticated");
-        window.location.href = "/client/login";
-        return;
-      }
 
       const formData = new FormData();
       formData.append("credit_app", document.getElementById("credit_app").files[0]);
@@ -43,6 +44,7 @@
         });
 
         if (!res.ok) throw new Error("Upload failed");
+
         const data = await res.json();
 
         document.getElementById("result").innerHTML = `
@@ -54,7 +56,7 @@
           <a href="/client/results?client_id=${data.client_id}">🔍 View Detailed Results</a>
         `;
       } catch (err) {
-        document.getElementById("result").innerText = err.message;
+        document.getElementById("result").innerText = "❌ " + err.message;
       }
     }
   </script>

@@ -105,15 +105,15 @@ def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 @app.get("/client/dashboard", response_class=HTMLResponse)
-def dashboard(request: Request, user: dict = Depends(get_current_user)):
+def serve_dashboard(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
 @app.get("/client/history", response_class=HTMLResponse)
-def history_ui(request: Request, user: dict = Depends(get_current_user)):
+def serve_history(request: Request):
     return templates.TemplateResponse("history.html", {"request": request})
 
 @app.get("/client/inventory", response_class=HTMLResponse)
-def inventory_ui(request: Request, user: dict = Depends(get_current_user)):
+def serve_inventory(request: Request):
     return templates.TemplateResponse("inventory.html", {"request": request})
 
 @app.get("/client/results", response_class=HTMLResponse)

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Dashboard - BestCall AI</title>
 </head>
 <body>
@@ -14,18 +14,19 @@
     <button onclick="logout()">Logout</button>
   </nav>
 
-  <div id="content" style="margin-top: 20px;">
-    <p>Select an option to get started.</p>
-  </div>
+  <p id="status" style="margin-top: 20px;"></p>
 
   <script>
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      alert("You're not logged in.");
+      window.location.href = "/client/login";
+    } else {
+      document.getElementById("status").innerText = "✅ Token found. You are authenticated.";
+    }
+
     function goTo(path) {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        alert("Not authenticated");
-        window.location.href = "/client/login";
-        return;
-      }
       window.location.href = path;
     }
 

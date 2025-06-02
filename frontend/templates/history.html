@@ -9,14 +9,14 @@
   <div id="history">Loading...</div>
 
   <script>
-    async function fetchHistory() {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        alert("Not authenticated");
-        window.location.href = "/client/login";
-        return;
-      }
+    const token = localStorage.getItem("access_token");
 
+    if (!token) {
+      alert("You're not logged in.");
+      window.location.href = "/client/login";
+    }
+
+    async function fetchHistory() {
       try {
         const res = await fetch("/history", {
           method: "GET",
@@ -28,8 +28,10 @@
         if (!res.ok) throw new Error("Failed to load history");
 
         const data = await res.json();
+        const container = document.getElementById("history");
+
         if (data.length === 0) {
-          document.getElementById("history").innerHTML = "<p>No history found.</p>";
+          container.innerHTML = "<p>No history found.</p>";
           return;
         }
 
@@ -47,10 +49,10 @@
           `;
         }
         html += "</ul>";
-        document.getElementById("history").innerHTML = html;
+        container.innerHTML = html;
 
       } catch (err) {
-        document.getElementById("history").innerText = err.message;
+        document.getElementById("history").innerText = "❌ " + err.message;
       }
     }
 
