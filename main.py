@@ -1,5 +1,6 @@
+
 from fastapi import FastAPI, UploadFile, File, Form, Depends, Request, Response, HTTPException, Cookie
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -54,6 +55,10 @@ def get_current_user(session_id: Optional[str] = Cookie(None)):
             return user
     raise HTTPException(status_code=401, detail="Invalid session")
 
+@app.get("/")
+def root():
+    return JSONResponse(content={"message": "BestCall AI is live."})
+
 @app.post("/auth/login")
 async def login(response: Response, email: str = Form(...), password: str = Form(...)):
     users = load_users()
@@ -92,10 +97,6 @@ def create_user(email: str = Form(...), password: str = Form(...), name: str = F
     })
     save_users(users)
     return {"status": "User created"}
-
-@app.get("/", response_class=HTMLResponse)
-def root():
-    return {"message": "BestCall AI is live."}
 
 @app.get("/client/login", response_class=HTMLResponse)
 def login_page(request: Request):
@@ -170,36 +171,26 @@ def get_history():
     return sorted(results, key=lambda x: x["timestamp"], reverse=True)
 
 @app.post("/upload/")
-async def upload(
-    credit_app: UploadFile = File(...),
-    credit_report: UploadFile = File(...),
-    user: dict = Depends(get_current_user)
-):
+async def upload(credit_app: UploadFile = File(...), credit_report: UploadFile = File(...), user: dict = Depends(get_current_user)):
     cid = f"client_{uuid.uuid4().hex[:8]}"
     base = f"data/training_clients/{cid}"
     os.makedirs(base, exist_ok=True)
-
     app_path = os.path.join(base, "credit_app.pdf")
     rep_path = os.path.join(base, "credit_report.pdf")
     with open(app_path, "wb") as f: shutil.copyfileobj(credit_app.file, f)
     with open(rep_path, "wb") as f: shutil.copyfileobj(credit_report.file, f)
-
     app_data = extract_from_credit_app(app_path, cid)
     report_data = extract_from_credit_report(rep_path, cid)
     merged = {"client_id": cid, "application": app_data, "credit_report": report_data}
-
     try:
         merged["vehicle_match"] = match_vehicle_to_profile(base, supabase)
     except:
         merged["vehicle_match"] = None
-
     with open(os.path.join(base, "client_profile.json"), "w") as f:
         json.dump(merged, f, indent=2)
-
     gpt = predict_approval(merged, base)
     with open(os.path.join(base, "predicted_approval_summary.json"), "w") as f:
         json.dump(gpt, f, indent=2)
-
     return {
         "client_id": cid,
         "gpt_prediction": gpt,
@@ -209,11 +200,7 @@ async def upload(
     }
 
 @app.post("/train/")
-async def upload_actuals(
-    client_id: str = Form(...),
-    files: list[UploadFile] = File(...),
-    user: dict = Depends(get_current_user)
-):
+async def upload_actuals(client_id: str = Form(...), files: list[UploadFile] = File(...), user: dict = Depends(get_current_user)):
     base = f"data/training_clients/{client_id}/actual_bank_decisions"
     os.makedirs(base, exist_ok=True)
     for i, file in enumerate(files):
@@ -225,7 +212,6 @@ async def upload_actuals(
 def get_metrics():
     return summarize_training_log()
 
-# Admin (System Operations) UI routes
 @app.get("/system-operations", response_class=HTMLResponse)
 def system_ops_home(request: Request, user: dict = Depends(get_current_user)):
     return templates.TemplateResponse("admin/system_ops.html", {"request": request})
