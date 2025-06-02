@@ -3,13 +3,15 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import os, shutil, uuid, json, hashlib
+import os, shutil, uuid, json
 import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
 from typing import Optional
+import hashlib
 
+# Core scripts
 from scripts.parse_credit_app_pdf_ai import extract_from_credit_app
 from scripts.parse_credit_report_pdf_ai import extract_from_credit_report
 from scripts.predict_approval_gpt import predict_approval
@@ -17,19 +19,21 @@ from scripts.predict_approval_from_json import predict_approval as predict_ml
 from scripts.train_from_actuals import train_from_actuals
 from scripts.analyze_approval_history_ai import summarize_training_log
 from scripts.predict_vehicle_match import match_vehicle_to_profile
-from utils.security import verify_key
 
-# === Setup ===
+# Load secrets
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# 🔧 Initialize FastAPI app
 app = FastAPI()
+
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 templates = Jinja2Templates(directory="frontend/templates")
 
+# === Auth and session ===
 SESSION_COOKIE_NAME = "bestcall_session"
 USERS_FILE = "data/users.json"
 
@@ -55,13 +59,6 @@ def get_current_user(session_id: Optional[str] = Cookie(None)):
             return user
     raise HTTPException(status_code=401, detail="Invalid session")
 
-# ✅ NEW - Test Logging Route
-@app.get("/logtest")
-def test_log():
-    print("🧪 Log test route hit successfully")
-    return {"status": "ok"}
-
-# === Auth Routes ===
 @app.post("/auth/login")
 async def login(response: Response, email: str = Form(...), password: str = Form(...)):
     users = load_users()
@@ -71,7 +68,7 @@ async def login(response: Response, email: str = Form(...), password: str = Form
     print("🔑 Hashed input password:", input_hash)
 
     for user in users:
-        print("🧾 Stored user:", user["email"], "| Password hash:", user["password"])
+        print("📂 Stored user:", user["email"], "| Password hash:", user["password"])
         if user["email"] == email and user["password"] == input_hash:
             print("✅ Match found! Logging in:", email)
             session_id = hash_password(email)
@@ -81,12 +78,6 @@ async def login(response: Response, email: str = Form(...), password: str = Form
 
     print("❌ Login failed for:", email)
     raise HTTPException(status_code=401, detail="Invalid login")
-
-@app.get("/logout")
-def logout():
-    res = RedirectResponse("/client/login", status_code=302)
-    res.delete_cookie(SESSION_COOKIE_NAME)
-    return res
 
 @app.post("/create_user")
 def create_user(email: str = Form(...), password: str = Form(...), name: str = Form(...)):
@@ -102,7 +93,13 @@ def create_user(email: str = Form(...), password: str = Form(...), name: str = F
     save_users(users)
     return {"status": "User created"}
 
-# === Client Routes ===
+@app.get("/logout")
+def logout():
+    res = RedirectResponse("/client/login", status_code=302)
+    res.delete_cookie(SESSION_COOKIE_NAME)
+    return res
+
+# === Client pages ===
 @app.get("/", response_class=HTMLResponse)
 def root():
     return {"message": "BestCall AI is live."}
@@ -190,13 +187,13 @@ async def upload(
     base = f"data/training_clients/{cid}"
     os.makedirs(base, exist_ok=True)
 
-    app_path = os.path.join(base, "credit_app.pdf")
-    rep_path = os.path.join(base, "credit_report.pdf")
-    with open(app_path, "wb") as f: shutil.copyfileobj(credit_app.file, f)
-    with open(rep_path, "wb") as f: shutil.copyfileobj(credit_report.file, f)
+    with open(os.path.join(base, "credit_app.pdf"), "wb") as f:
+        shutil.copyfileobj(credit_app.file, f)
+    with open(os.path.join(base, "credit_report.pdf"), "wb") as f:
+        shutil.copyfileobj(credit_report.file, f)
 
-    app_data = extract_from_credit_app(app_path, cid)
-    report_data = extract_from_credit_report(rep_path, cid)
+    app_data = extract_from_credit_app(os.path.join(base, "credit_app.pdf"), cid)
+    report_data = extract_from_credit_report(os.path.join(base, "credit_report.pdf"), cid)
     merged = {"client_id": cid, "application": app_data, "credit_report": report_data}
 
     try:
