@@ -1,0 +1,48 @@
+{% extends "admin/base_system_ops.html" %}
+{% block content %}
+<h1>AI Performance Logs</h1>
+
+<table id="performance-table" border="1">
+  <thead>
+    <tr>
+      <th>Client ID</th>
+      <th>Timestamp</th>
+      <th>Matched</th>
+      <th>Total</th>
+      <th>Accuracy</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<button onclick="triggerRetrain()">Retrain Now</button>
+{% endblock %}
+
+{% block script %}
+<script>
+  async function loadPerformanceLogs() {
+    const res = await fetch('/admin/performance/data');
+    const data = await res.json();
+    const tbody = document.querySelector("#performance-table tbody");
+    tbody.innerHTML = "";
+    data.forEach(entry => {
+      const row = `<tr>
+        <td>${entry.client_id}</td>
+        <td>${entry.timestamp}</td>
+        <td>${entry.matched}</td>
+        <td>${entry.total}</td>
+        <td>${entry.accuracy}</td>
+      </tr>`;
+      tbody.innerHTML += row;
+    });
+  }
+
+  async function triggerRetrain() {
+    await fetch('/train/', { method: 'POST' });
+    alert("Retraining started!");
+    loadPerformanceLogs();
+  }
+
+  loadPerformanceLogs();
+</script>
+{% endblock %}

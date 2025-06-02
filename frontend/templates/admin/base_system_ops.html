@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>System Operations – BestCall</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <script src="/static/js/admin.js" defer></script>
+</head>
+<body>
+  <header>Welcome, Matthew | <a href="/logout">Logout</a></header>
+  <nav>
+    <ul>
+      <li><a href="/system-operations">Dashboard</a></li>
+      <li><a href="/system-operations/performance">AI Logs</a></li>
+      <li><a href="/system-operations/team">Team</a></li>
+      <li><a href="/system-operations/security">Security</a></li>
+      <li><a href="/system-operations/dealers">Dealerships</a></li>
+      <li><a href="/system-operations/settings">Settings</a></li>
+    </ul>
+  </nav>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

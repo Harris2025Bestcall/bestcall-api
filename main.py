@@ -1,10 +1,8 @@
-from fastapi import FastAPI, UploadFile, File, Form, Depends, Request, Response, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi import FastAPI, UploadFile, File, Form, Depends, Request, Response, HTTPException, Cookie
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware  # ✅ Fixed import
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-
 import os, shutil, uuid, json, hashlib
 import pandas as pd
 from datetime import datetime
@@ -21,22 +19,19 @@ from scripts.analyze_approval_history_ai import summarize_training_log
 from scripts.predict_vehicle_match import match_vehicle_to_profile
 from utils.security import verify_key
 
-# Load env variables
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# App setup
 app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key="super-secret-key")  # ✅ Replace with env var in production
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 templates = Jinja2Templates(directory="frontend/templates")
 
+SESSION_COOKIE_NAME = "bestcall_session"
 USERS_FILE = "data/users.json"
 
-# User session + hashing utils
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -50,31 +45,39 @@ def save_users(users):
     with open(USERS_FILE, "w") as f:
         json.dump(users, f, indent=2)
 
-def get_current_user(request: Request):
-    email = request.session.get("user")
-    if not email:
+def get_current_user(session_id: Optional[str] = Cookie(None)):
+    if not session_id:
         raise HTTPException(status_code=401, detail="Not logged in")
     users = load_users()
     for user in users:
-        if user["email"] == email:
+        if hash_password(user["email"]) == session_id:
             return user
     raise HTTPException(status_code=401, detail="Invalid session")
 
-# Auth routes
 @app.post("/auth/login")
-async def login(request: Request, email: str = Form(...), password: str = Form(...)):
+async def login(response: Response, email: str = Form(...), password: str = Form(...)):
     users = load_users()
-    hashed = hash_password(password)
+    input_hash = hash_password(password)
     for user in users:
-        if user["email"] == email and user["password"] == hashed:
-            request.session["user"] = email
-            return RedirectResponse(url="/client/dashboard", status_code=302)
+        if user["email"] == email and user["password"] == input_hash:
+            session_id = hash_password(email)
+            res = RedirectResponse(url="/client/dashboard", status_code=302)
+            res.set_cookie(
+                SESSION_COOKIE_NAME,
+                session_id,
+                httponly=True,
+                max_age=3600,
+                secure=True,
+                samesite="none"
+            )
+            return res
     raise HTTPException(status_code=401, detail="Invalid login")
 
 @app.get("/logout")
-def logout(request: Request):
-    request.session.clear()
-    return RedirectResponse("/client/login", status_code=302)
+def logout():
+    res = RedirectResponse("/client/login", status_code=302)
+    res.delete_cookie(SESSION_COOKIE_NAME)
+    return res
 
 @app.post("/create_user")
 def create_user(email: str = Form(...), password: str = Form(...), name: str = Form(...)):
@@ -90,10 +93,9 @@ def create_user(email: str = Form(...), password: str = Form(...), name: str = F
     save_users(users)
     return {"status": "User created"}
 
-# UI routes
 @app.get("/", response_class=HTMLResponse)
 def root():
-    return JSONResponse({"message": "BestCall AI is live."})
+    return {"message": "BestCall AI is live."}
 
 @app.get("/client/login", response_class=HTMLResponse)
 def login_page(request: Request):
@@ -136,14 +138,13 @@ def show_results(request: Request, client_id: str, user: dict = Depends(get_curr
             "vehicle_match": None
         })
 
-# API routes
 @app.get("/inventory")
 def get_inventory():
     try:
         df = pd.read_csv("data/inventory/cleaned vehicle inventory.csv")
-        return JSONResponse(content=df.to_dict(orient="records"))
+        return df.to_dict(orient="records")
     except Exception as e:
-        return JSONResponse(content={"error": str(e)})
+        return {"error": str(e)}
 
 @app.get("/history")
 def get_history():
@@ -166,10 +167,14 @@ def get_history():
             })
         except:
             continue
-    return JSONResponse(content=sorted(results, key=lambda x: x["timestamp"], reverse=True))
+    return sorted(results, key=lambda x: x["timestamp"], reverse=True)
 
 @app.post("/upload/")
-async def upload(request: Request, credit_app: UploadFile = File(...), credit_report: UploadFile = File(...), user: dict = Depends(get_current_user)):
+async def upload(
+    credit_app: UploadFile = File(...),
+    credit_report: UploadFile = File(...),
+    user: dict = Depends(get_current_user)
+):
     cid = f"client_{uuid.uuid4().hex[:8]}"
     base = f"data/training_clients/{cid}"
     os.makedirs(base, exist_ok=True)
@@ -195,23 +200,61 @@ async def upload(request: Request, credit_app: UploadFile = File(...), credit_re
     with open(os.path.join(base, "predicted_approval_summary.json"), "w") as f:
         json.dump(gpt, f, indent=2)
 
-    return JSONResponse({
+    return {
         "client_id": cid,
         "gpt_prediction": gpt,
         "ml_prediction": predict_ml(cid),
         "vehicle_match": merged["vehicle_match"],
         "approval_structure": gpt.get("approval_structure", {})
-    })
+    }
 
 @app.post("/train/")
-async def upload_actuals(request: Request, client_id: str = Form(...), files: list[UploadFile] = File(...), user: dict = Depends(get_current_user)):
+async def upload_actuals(
+    client_id: str = Form(...),
+    files: list[UploadFile] = File(...),
+    user: dict = Depends(get_current_user)
+):
     base = f"data/training_clients/{client_id}/actual_bank_decisions"
     os.makedirs(base, exist_ok=True)
     for i, file in enumerate(files):
         with open(os.path.join(base, f"decision_{i}.pdf"), "wb") as f:
             shutil.copyfileobj(file.file, f)
-    return JSONResponse(content=train_from_actuals(client_id))
+    return train_from_actuals(client_id)
 
 @app.get("/metrics")
 def get_metrics():
-    return JSONResponse(content=summarize_training_log())
+    return summarize_training_log()
+
+# Admin (System Operations) UI routes
+@app.get("/system-operations", response_class=HTMLResponse)
+def system_ops_home(request: Request, user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("admin/system_ops.html", {"request": request})
+
+@app.get("/system-operations/performance", response_class=HTMLResponse)
+def system_ops_performance(request: Request, user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("admin/ai_performance.html", {"request": request})
+
+@app.get("/system-operations/team", response_class=HTMLResponse)
+def system_ops_team(request: Request, user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("admin/team_management.html", {"request": request})
+
+@app.get("/system-operations/security", response_class=HTMLResponse)
+def system_ops_security(request: Request, user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("admin/security_access.html", {"request": request})
+
+@app.get("/system-operations/dealers", response_class=HTMLResponse)
+def system_ops_dealers(request: Request, user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("admin/dealership_portals.html", {"request": request})
+
+@app.get("/system-operations/settings", response_class=HTMLResponse)
+def system_ops_settings(request: Request, user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("admin/system_settings.html", {"request": request})
+
+@app.get("/admin/performance/data")
+def get_ai_performance_logs(user: dict = Depends(get_current_user)):
+    log_path = "data/training_log.jsonl"
+    if not os.path.exists(log_path):
+        return []
+    with open(log_path, "r") as f:
+        lines = f.readlines()
+    return [json.loads(line.strip()) for line in lines]
