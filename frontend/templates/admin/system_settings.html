@@ -5,12 +5,17 @@
 {% block content %}
   <h1>System Settings</h1>
 
+  <p>This section will allow you to configure global settings for the BestCall AI system.</p>
+
   <ul>
-    <li><strong>Model Refresh Interval:</strong> On demand via training uploads</li>
-    <li><strong>Inventory Sync:</strong> Manual via CSV upload (Supabase enabled)</li>
-    <li><strong>Version:</strong> BestCall AI v3.0</li>
-    <li><strong>API Key Access:</strong> Disabled (token-based auth now required)</li>
+    <li>🔧 Change model retraining intervals</li>
+    <li>🔐 Update JWT security settings</li>
+    <li>📦 Manage backup and storage options</li>
+    <li>📊 Customize prediction logic thresholds</li>
+    <li>⚙️ Toggle maintenance mode</li>
   </ul>
 
-  <p style="margin-top: 20px;"><em>Editable settings and toggles will be added as the system evolves.</em></p>
+  <div style="margin-top: 30px; font-style: italic;">
+    <p>⚠️ Admin configuration features will be available in the next development phase.</p>
+  </div>
 {% endblock %}

@@ -101,6 +101,12 @@ def create_user(email: str = Form(...), password: str = Form(...), name: str = F
     save_users(users)
     return {"status": "User created"}
 
+@app.get("/admin/users")
+def list_all_users(user: dict = Depends(get_current_user)):
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    return load_users()
+
 @app.get("/client/login", response_class=HTMLResponse)
 def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
@@ -215,7 +221,6 @@ async def upload_actuals(client_id: str = Form(...), files: list[UploadFile] = F
 def get_metrics():
     return summarize_training_log()
 
-# Admin routes no longer enforce token at route-level — frontend JS validates it
 @app.get("/system-operations", response_class=HTMLResponse)
 def system_ops_home(request: Request):
     return templates.TemplateResponse("admin/system_ops.html", {"request": request})

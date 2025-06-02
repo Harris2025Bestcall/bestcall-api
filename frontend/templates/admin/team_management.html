@@ -5,44 +5,38 @@
 {% block content %}
   <h1>Team Management</h1>
 
-  <form id="createUserForm">
-    <h3>Create New User</h3>
-    <label>Name:</label><br>
-    <input type="text" name="name" required><br>
-    <label>Email:</label><br>
-    <input type="email" name="email" required><br>
-    <label>Password:</label><br>
-    <input type="password" name="password" required><br><br>
+  <h2>Create New User</h2>
+  <form method="post" action="/create_user" onsubmit="return createUser(event)">
+    <label>Email: <input type="email" name="email" required></label><br>
+    <label>Name: <input type="text" name="name" required></label><br>
+    <label>Password: <input type="password" name="password" required></label><br>
     <button type="submit">Create User</button>
   </form>
 
-  <div id="createUserStatus" style="margin-top: 10px;"></div>
+  <p id="createStatus" style="margin-top: 10px;"></p>
 
   <script>
-    const form = document.getElementById("createUserForm");
-    const statusBox = document.getElementById("createUserStatus");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const formData = new FormData(form);
+    async function createUser(event) {
+      event.preventDefault();
+      const form = event.target;
+      const data = new FormData(form);
       const token = localStorage.getItem("access_token");
 
       const res = await fetch("/create_user", {
         method: "POST",
-        headers: {
-          Authorization: "Bearer " + token
-        },
-        body: formData
+        headers: { Authorization: "Bearer " + token },
+        body: data
       });
 
-      const data = await res.json();
+      const status = document.getElementById("createStatus");
       if (res.ok) {
-        statusBox.innerText = "✅ User created successfully.";
+        status.innerText = "✅ User created successfully.";
         form.reset();
       } else {
-        statusBox.innerText = "❌ " + (data.detail || "Error creating user.");
+        const msg = await res.json();
+        status.innerText = "❌ " + (msg.detail || "Error creating user.");
       }
-    });
+    }
   </script>
+
 {% endblock %}

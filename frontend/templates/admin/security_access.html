@@ -3,19 +3,87 @@
 {% block title %}Security & Access - BestCall AI{% endblock %}
 
 {% block content %}
-  <h1>Security & Access Controls</h1>
+  <h1>User Access & Security</h1>
 
-  <ul>
-    <li><strong>2FA Enforcement:</strong> Coming soon</li>
-    <li><strong>Token Expiry:</strong> 60 minutes (auto-refresh not yet enabled)</li>
-    <li><strong>Current Role-Based Access:</strong>
-      <ul>
-        <li><code>admin</code> → Full system access</li>
-        <li><code>dealer</code> → Access only to their assigned portal</li>
-      </ul>
-    </li>
-    <li><strong>Session Storage:</strong> Access token stored in browser localStorage</li>
-  </ul>
+  <p>This page allows you to view, manage, and modify user roles and credentials.</p>
 
-  <p style="margin-top: 20px;"><em>Advanced permission tiers and audit logs are on the roadmap.</em></p>
+  <div id="userTable"></div>
+
+  <script>
+    async function loadUsers() {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch("/users", {
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      });
+
+      const users = await res.json();
+      const container = document.getElementById("userTable");
+      container.innerHTML = "";
+
+      const table = document.createElement("table");
+      table.border = "1";
+      table.cellPadding = "6";
+
+      const header = document.createElement("tr");
+      ["Name", "Email", "Role", "Actions"].forEach(text => {
+        const th = document.createElement("th");
+        th.innerText = text;
+        header.appendChild(th);
+      });
+      table.appendChild(header);
+
+      users.forEach(user => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${user.name}</td>
+          <td>${user.email}</td>
+          <td>
+            <select onchange="updateRole('${user.email}', this.value)">
+              <option value="dealer" ${user.role === "dealer" ? "selected" : ""}>Dealer</option>
+              <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
+            </select>
+          </td>
+          <td>
+            <button onclick="resetPassword('${user.email}')">Reset Password</button>
+          </td>
+        `;
+        table.appendChild(tr);
+      });
+
+      container.appendChild(table);
+    }
+
+    async function updateRole(email, newRole) {
+      const token = localStorage.getItem("access_token");
+      await fetch("/update_role", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, role: newRole })
+      });
+      alert(`Role updated to ${newRole}`);
+    }
+
+    async function resetPassword(email) {
+      const token = localStorage.getItem("access_token");
+      const newPass = prompt(`Enter a new password for ${email}`);
+      if (!newPass) return;
+
+      await fetch("/reset_password", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password: newPass })
+      });
+      alert("Password reset successfully.");
+    }
+
+    loadUsers();
+  </script>
 {% endblock %}
