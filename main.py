@@ -1,3 +1,4 @@
+# main.py
 from fastapi import FastAPI, UploadFile, File, Form, Depends, Request, Response, HTTPException, Header
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,7 +8,6 @@ import os, shutil, uuid, json, hashlib
 import pandas as pd
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from supabase import create_client
 from jose import JWTError, jwt
 from typing import Optional
 
@@ -18,6 +18,13 @@ from scripts.predict_approval_from_json import predict_approval as predict_ml
 from scripts.train_from_actuals import train_from_actuals
 from scripts.analyze_approval_history_ai import summarize_training_log
 from scripts.predict_vehicle_match import match_vehicle_to_profile
+from utils.security import get_current_user
+
+# Optional if using Supabase inventory
+try:
+    from supabase import create_client
+except:
+    create_client = None
 
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -26,7 +33,10 @@ JWT_SECRET = os.getenv("JWT_SECRET", "your-very-secret-key")
 JWT_ALGORITHM = "HS256"
 JWT_EXP_MINUTES = 60
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+if create_client:
+    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+else:
+    supabase = None
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
@@ -53,21 +63,6 @@ def create_token(data: dict):
     expire = datetime.utcnow() + timedelta(minutes=JWT_EXP_MINUTES)
     payload.update({"exp": expire})
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-
-def get_current_user(authorization: str = Header(...)):
-    try:
-        scheme, _, token = authorization.partition(" ")
-        if scheme.lower() != "bearer":
-            raise HTTPException(status_code=403, detail="Invalid auth scheme")
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        email = payload.get("sub")
-        users = load_users()
-        for user in users:
-            if user["email"] == email:
-                return user
-        raise HTTPException(status_code=401, detail="User not found")
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 @app.get("/")
 def root():
@@ -148,6 +143,61 @@ def show_results(request: Request, client_id: str, user: dict = Depends(get_curr
             "vehicle_match": None
         })
 
+@app.get("/upload", response_class=HTMLResponse)
+async def upload_page(request: Request, user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("upload.html", {"request": request})
+
+@app.post("/upload-predict")
+async def upload_predict(
+    credit_app: UploadFile = File(...),
+    credit_report: UploadFile = File(...),
+    user: dict = Depends(get_current_user)
+):
+    cid = f"{user['email'].split('@')[0]}_{uuid.uuid4().hex[:6]}"
+    base = os.path.join("data", "training_clients", cid)
+    os.makedirs(base, exist_ok=True)
+
+    app_path = os.path.join(base, "credit_app.pdf")
+    report_path = os.path.join(base, "credit_report.pdf")
+
+    with open(app_path, "wb") as f:
+        shutil.copyfileobj(credit_app.file, f)
+    with open(report_path, "wb") as f:
+        shutil.copyfileobj(credit_report.file, f)
+
+    app_data = extract_from_credit_app(app_path, cid)
+    report_data = extract_from_credit_report(report_path, cid)
+    merged = {"client_id": cid, "application": app_data, "credit_report": report_data}
+
+    try:
+        merged["vehicle_match"] = match_vehicle_to_profile(base, supabase) if supabase else None
+    except:
+        merged["vehicle_match"] = None
+
+    with open(os.path.join(base, "client_profile.json"), "w") as f:
+        json.dump(merged, f, indent=2)
+
+    gpt = predict_approval(merged, base)
+    with open(os.path.join(base, "predicted_approval_summary.json"), "w") as f:
+        json.dump(gpt, f, indent=2)
+
+    return {
+        "client_id": cid,
+        "gpt_prediction": gpt,
+        "ml_prediction": predict_ml(cid),
+        "vehicle_match": merged["vehicle_match"],
+        "approval_structure": gpt.get("approval_structure", {})
+    }
+
+@app.post("/train/")
+async def upload_actuals(client_id: str = Form(...), files: list[UploadFile] = File(...), user: dict = Depends(get_current_user)):
+    base = f"data/training_clients/{client_id}/actual_bank_decisions"
+    os.makedirs(base, exist_ok=True)
+    for i, file in enumerate(files):
+        with open(os.path.join(base, f"decision_{i}.pdf"), "wb") as f:
+            shutil.copyfileobj(file.file, f)
+    return train_from_actuals(client_id)
+
 @app.get("/inventory")
 def get_inventory():
     try:
@@ -178,44 +228,6 @@ def get_history():
         except:
             continue
     return sorted(results, key=lambda x: x["timestamp"], reverse=True)
-
-@app.post("/upload/")
-async def upload(credit_app: UploadFile = File(...), credit_report: UploadFile = File(...), user: dict = Depends(get_current_user)):
-    cid = f"client_{uuid.uuid4().hex[:8]}"
-    base = f"data/training_clients/{cid}"
-    os.makedirs(base, exist_ok=True)
-    app_path = os.path.join(base, "credit_app.pdf")
-    rep_path = os.path.join(base, "credit_report.pdf")
-    with open(app_path, "wb") as f: shutil.copyfileobj(credit_app.file, f)
-    with open(rep_path, "wb") as f: shutil.copyfileobj(credit_report.file, f)
-    app_data = extract_from_credit_app(app_path, cid)
-    report_data = extract_from_credit_report(rep_path, cid)
-    merged = {"client_id": cid, "application": app_data, "credit_report": report_data}
-    try:
-        merged["vehicle_match"] = match_vehicle_to_profile(base, supabase)
-    except:
-        merged["vehicle_match"] = None
-    with open(os.path.join(base, "client_profile.json"), "w") as f:
-        json.dump(merged, f, indent=2)
-    gpt = predict_approval(merged, base)
-    with open(os.path.join(base, "predicted_approval_summary.json"), "w") as f:
-        json.dump(gpt, f, indent=2)
-    return {
-        "client_id": cid,
-        "gpt_prediction": gpt,
-        "ml_prediction": predict_ml(cid),
-        "vehicle_match": merged["vehicle_match"],
-        "approval_structure": gpt.get("approval_structure", {})
-    }
-
-@app.post("/train/")
-async def upload_actuals(client_id: str = Form(...), files: list[UploadFile] = File(...), user: dict = Depends(get_current_user)):
-    base = f"data/training_clients/{client_id}/actual_bank_decisions"
-    os.makedirs(base, exist_ok=True)
-    for i, file in enumerate(files):
-        with open(os.path.join(base, f"decision_{i}.pdf"), "wb") as f:
-            shutil.copyfileobj(file.file, f)
-    return train_from_actuals(client_id)
 
 @app.get("/metrics")
 def get_metrics():
