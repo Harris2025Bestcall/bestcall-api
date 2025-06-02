@@ -1,35 +1,44 @@
-{% extends "base.html" %}
-{% block content %}
-  <h2 class="page-title">Login</h2>
-
-  <div class="card full-width">
-    <form id="loginForm">
-      <label>Email</label>
-      <input type="email" name="email" required /><br><br>
-
-      <label>Password</label>
-      <input type="password" name="password" required /><br><br>
-
-      <button type="submit">Log In</button>
-    </form>
-  </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - BestCall AI</title>
+</head>
+<body>
+  <h2>Login to BestCall AI</h2>
+  <form onsubmit="login(event)">
+    <input type="email" id="email" placeholder="Email" required /><br />
+    <input type="password" id="password" placeholder="Password" required /><br />
+    <button type="submit">Login</button>
+  </form>
+  <div id="error" style="color:red; margin-top: 10px;"></div>
 
   <script>
-    document.getElementById("loginForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
+    async function login(event) {
+      event.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-      const res = await fetch("/auth/login", {
-        method: "POST",
-        body: formData,
-        redirect: "follow"
-      });
+      const formData = new FormData();
+      formData.append("email", email);
+      formData.append("password", password);
 
-      if (res.redirected) {
-        window.location.href = res.url;
-      } else {
-        alert("Invalid login. Please try again.");
+      try {
+        const res = await fetch("/auth/login", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error("Invalid login credentials");
+
+        const data = await res.json();
+        localStorage.setItem("access_token", data.access_token);
+        window.location.href = "/client/dashboard";
+      } catch (err) {
+        document.getElementById("error").innerText = err.message;
       }
-    });
+    }
   </script>
-{% endblock %}
+</body>
+</html>

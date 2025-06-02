@@ -1,5 +1,91 @@
 {% extends "admin/base_system_ops.html" %}
+
+{% block title %}Team Management - BestCall AI{% endblock %}
+
 {% block content %}
-  <h1>Page Title</h1>
-  <!-- Add content here -->
+  <h1>Team Management</h1>
+
+  <h3>Create New User</h3>
+  <form onsubmit="createUser(event)">
+    <label>Email:</label><br />
+    <input type="email" id="email" required /><br />
+
+    <label>Name:</label><br />
+    <input type="text" id="name" required /><br />
+
+    <label>Password:</label><br />
+    <input type="password" id="password" required /><br /><br />
+
+    <button type="submit">Create User</button>
+  </form>
+
+  <p id="userStatus" style="margin-top: 10px;"></p>
+
+  <hr />
+
+  <h3>All Users</h3>
+  <table border="1" id="userTable">
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Name</th>
+        <th>Role</th>
+      </tr>
+    </thead>
+    <tbody id="userList">
+      <tr><td colspan="3">Loading...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    async function createUser(event) {
+      event.preventDefault();
+      const token = localStorage.getItem("access_token");
+      const formData = new FormData();
+      formData.append("email", document.getElementById("email").value);
+      formData.append("name", document.getElementById("name").value);
+      formData.append("password", document.getElementById("password").value);
+
+      const res = await fetch("/create_user", {
+        method: "POST",
+        body: formData,
+        headers: { Authorization: "Bearer " + token }
+      });
+
+      if (res.ok) {
+        document.getElementById("userStatus").innerText = "✅ User created.";
+        loadUsers();
+      } else {
+        const err = await res.json();
+        document.getElementById("userStatus").innerText = `❌ ${err.detail}`;
+      }
+    }
+
+    async function loadUsers() {
+      const token = localStorage.getItem("access_token");
+      try {
+        const res = await fetch("/admin/users", {
+          headers: { Authorization: "Bearer " + token }
+        });
+        const users = await res.json();
+
+        const tbody = document.getElementById("userList");
+        tbody.innerHTML = "";
+
+        for (const u of users) {
+          tbody.innerHTML += `
+            <tr>
+              <td>${u.email}</td>
+              <td>${u.name}</td>
+              <td>${u.role}</td>
+            </tr>
+          `;
+        }
+      } catch {
+        document.getElementById("userList").innerHTML = "<tr><td colspan='3'>Failed to load users.</td></tr>";
+      }
+    }
+
+    loadUsers();
+  </script>
 {% endblock %}

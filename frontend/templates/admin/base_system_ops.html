@@ -1,24 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>System Operations – BestCall</title>
-  <link rel="stylesheet" href="/static/css/styles.css">
-  <script src="/static/js/admin.js" defer></script>
+  <meta charset="UTF-8" />
+  <title>{% block title %}Admin - BestCall AI{% endblock %}</title>
 </head>
 <body>
-  <header>Welcome, Matthew | <a href="/logout">Logout</a></header>
   <nav>
-    <ul>
-      <li><a href="/system-operations">Dashboard</a></li>
-      <li><a href="/system-operations/performance">AI Logs</a></li>
-      <li><a href="/system-operations/team">Team</a></li>
-      <li><a href="/system-operations/security">Security</a></li>
-      <li><a href="/system-operations/dealers">Dealerships</a></li>
-      <li><a href="/system-operations/settings">Settings</a></li>
-    </ul>
+    <button onclick="goTo('/system-operations')">Home</button>
+    <button onclick="goTo('/system-operations/performance')">AI Performance Logs</button>
+    <button onclick="goTo('/system-operations/team')">Team Management</button>
+    <button onclick="goTo('/system-operations/dealers')">Dealership Portals</button>
+    <button onclick="goTo('/system-operations/security')">Security & Access</button>
+    <button onclick="goTo('/system-operations/settings')">System Settings</button>
+    <button onclick="logout()">Logout</button>
   </nav>
-  <main>
+
+  <div id="content">
     {% block content %}{% endblock %}
-  </main>
+  </div>
+
+  <script>
+    function goTo(path) {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        alert("Not authenticated");
+        window.location.href = "/client/login";
+        return;
+      }
+      window.location.href = path;
+    }
+
+    function logout() {
+      localStorage.removeItem("access_token");
+      window.location.href = "/client/login";
+    }
+  </script>
 </body>
 </html>

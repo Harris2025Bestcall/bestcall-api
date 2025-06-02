@@ -1,67 +1,84 @@
-{% extends "base.html" %}
-{% block content %}
-  <h2 class="page-title">Dealer Inventory</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Inventory - BestCall AI</title>
+</head>
+<body>
+  <h1>Dealership Inventory</h1>
 
-  <div class="card full-width">
-    <input
-      type="text"
-      id="searchInput"
-      placeholder="Search vehicle inventory..."
-      class="search-bar"
-    />
-    <br><br>
-
-    <table class="inventory-table" id="inventoryTable">
-      <thead>
-        <tr>
-          <th>Year</th>
-          <th>Make</th>
-          <th>Model</th>
-          <th>Retail</th>
-          <th>Book</th>
-          <th>Cost</th>
-          <th>Days on Lot</th>
-          <th>Times Matched</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <input type="text" id="search" placeholder="Search inventory..." onkeyup="filterTable()" />
+  <table border="1" id="inventoryTable" style="margin-top: 20px;">
+    <thead>
+      <tr>
+        <th>Year</th>
+        <th>Make</th>
+        <th>Model</th>
+        <th>Retail</th>
+        <th>Book</th>
+        <th>Dealer Cost</th>
+        <th>Days on Lot</th>
+        <th>Times Matched</th>
+      </tr>
+    </thead>
+    <tbody id="inventoryBody">
+      <tr><td colspan="8">Loading...</td></tr>
+    </tbody>
+  </table>
 
   <script>
-    async function fetchInventory() {
-      const res = await fetch("/inventory", {
-        headers: { "x-api-key": "your-api-key-here" }
-      });
-      const data = await res.json();
+    async function loadInventory() {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        alert("Not authenticated");
+        window.location.href = "/client/login";
+        return;
+      }
 
-      const tableBody = document.querySelector("#inventoryTable tbody");
-      tableBody.innerHTML = "";
+      try {
+        const res = await fetch("/inventory", {
+          method: "GET",
+          headers: {
+            Authorization: "Bearer " + token
+          }
+        });
 
-      data.forEach(item => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${item.year}</td>
-          <td>${item.make}</td>
-          <td>${item.model}</td>
-          <td>$${item.retail_price}</td>
-          <td>$${item.book_value}</td>
-          <td>$${item.dealer_cost}</td>
-          <td>${item.days_on_lot}</td>
-          <td>${item.times_matched}</td>
-        `;
-        tableBody.appendChild(row);
+        if (!res.ok) throw new Error("Failed to load inventory");
+
+        const data = await res.json();
+        const body = document.getElementById("inventoryBody");
+        body.innerHTML = "";
+
+        for (const car of data) {
+          body.innerHTML += `
+            <tr>
+              <td>${car.year || ''}</td>
+              <td>${car.make || ''}</td>
+              <td>${car.model || ''}</td>
+              <td>${car.retail || ''}</td>
+              <td>${car.book || ''}</td>
+              <td>${car.dealer_cost || ''}</td>
+              <td>${car.days_on_lot || ''}</td>
+              <td>${car.times_matched || ''}</td>
+            </tr>
+          `;
+        }
+      } catch (err) {
+        document.getElementById("inventoryBody").innerHTML = `<tr><td colspan="8">${err.message}</td></tr>`;
+      }
+    }
+
+    function filterTable() {
+      const search = document.getElementById("search").value.toLowerCase();
+      const rows = document.querySelectorAll("#inventoryTable tbody tr");
+
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(search) ? "" : "none";
       });
     }
 
-    document.getElementById("searchInput").addEventListener("input", function () {
-      const filter = this.value.toLowerCase();
-      const rows = document.querySelectorAll("#inventoryTable tbody tr");
-      rows.forEach(row => {
-        row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
-      });
-    });
-
-    fetchInventory();
+    loadInventory();
   </script>
-{% endblock %}
+</body>
+</html>

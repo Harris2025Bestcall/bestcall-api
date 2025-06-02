@@ -1,14 +1,14 @@
-
-from fastapi import FastAPI, UploadFile, File, Form, Depends, Request, Response, HTTPException, Cookie
+from fastapi import FastAPI, UploadFile, File, Form, Depends, Request, Response, HTTPException, Header
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import os, shutil, uuid, json, hashlib
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from supabase import create_client
+from jose import JWTError, jwt
 from typing import Optional
 
 from scripts.parse_credit_app_pdf_ai import extract_from_credit_app
@@ -18,11 +18,14 @@ from scripts.predict_approval_from_json import predict_approval as predict_ml
 from scripts.train_from_actuals import train_from_actuals
 from scripts.analyze_approval_history_ai import summarize_training_log
 from scripts.predict_vehicle_match import match_vehicle_to_profile
-from utils.security import verify_key
 
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+JWT_SECRET = os.getenv("JWT_SECRET", "your-very-secret-key")
+JWT_ALGORITHM = "HS256"
+JWT_EXP_MINUTES = 60
+
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = FastAPI()
@@ -30,9 +33,9 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, 
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 templates = Jinja2Templates(directory="frontend/templates")
 
-SESSION_COOKIE_NAME = "bestcall_session"
 USERS_FILE = "data/users.json"
 
+# -------------------- AUTH HELPERS --------------------
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -46,43 +49,42 @@ def save_users(users):
     with open(USERS_FILE, "w") as f:
         json.dump(users, f, indent=2)
 
-def get_current_user(session_id: Optional[str] = Cookie(None)):
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Not logged in")
-    users = load_users()
-    for user in users:
-        if hash_password(user["email"]) == session_id:
-            return user
-    raise HTTPException(status_code=401, detail="Invalid session")
+def create_token(data: dict):
+    payload = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=JWT_EXP_MINUTES)
+    payload.update({"exp": expire})
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def get_current_user(authorization: str = Header(...)):
+    try:
+        scheme, _, token = authorization.partition(" ")
+        if scheme.lower() != "bearer":
+            raise HTTPException(status_code=403, detail="Invalid auth scheme")
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        email = payload.get("sub")
+        users = load_users()
+        for user in users:
+            if user["email"] == email:
+                return user
+        raise HTTPException(status_code=401, detail="User not found")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+# -------------------- ROUTES --------------------
 
 @app.get("/")
 def root():
     return JSONResponse(content={"message": "BestCall AI is live."})
 
 @app.post("/auth/login")
-async def login(response: Response, email: str = Form(...), password: str = Form(...)):
+async def login(email: str = Form(...), password: str = Form(...)):
     users = load_users()
-    input_hash = hash_password(password)
+    hashed = hash_password(password)
     for user in users:
-        if user["email"] == email and user["password"] == input_hash:
-            session_id = hash_password(email)
-            res = RedirectResponse(url="/client/dashboard", status_code=302)
-            res.set_cookie(
-                SESSION_COOKIE_NAME,
-                session_id,
-                httponly=True,
-                max_age=3600,
-                secure=True,
-                samesite="none"
-            )
-            return res
+        if user["email"] == email and user["password"] == hashed:
+            token = create_token({"sub": email})
+            return {"access_token": token, "token_type": "bearer"}
     raise HTTPException(status_code=401, detail="Invalid login")
-
-@app.get("/logout")
-def logout():
-    res = RedirectResponse("/client/login", status_code=302)
-    res.delete_cookie(SESSION_COOKIE_NAME)
-    return res
 
 @app.post("/create_user")
 def create_user(email: str = Form(...), password: str = Form(...), name: str = Form(...)):
@@ -212,6 +214,7 @@ async def upload_actuals(client_id: str = Form(...), files: list[UploadFile] = F
 def get_metrics():
     return summarize_training_log()
 
+# ---- Admin System Ops ----
 @app.get("/system-operations", response_class=HTMLResponse)
 def system_ops_home(request: Request, user: dict = Depends(get_current_user)):
     return templates.TemplateResponse("admin/system_ops.html", {"request": request})

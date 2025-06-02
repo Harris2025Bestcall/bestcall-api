@@ -1,5 +1,138 @@
 {% extends "admin/base_system_ops.html" %}
+
+{% block title %}Security & Access - BestCall AI{% endblock %}
+
 {% block content %}
-  <h1>Page Title</h1>
-  <!-- Add content here -->
+  <h1>Security & Access</h1>
+
+  <h3>Settings</h3>
+  <form onsubmit="saveSettings(event)">
+    <label>
+      <input type="checkbox" id="enable_2fa" /> Enable 2FA for All Admins
+    </label><br /><br />
+
+    <label>
+      IP Whitelist (comma-separated):<br />
+      <input type="text" id="ip_whitelist" placeholder="e.g. 192.168.0.1,10.0.0.2" />
+    </label><br /><br />
+
+    <button type="submit">Save Settings</button>
+    <p id="settingsStatus" style="margin-top: 10px;"></p>
+  </form>
+
+  <hr />
+
+  <h3>Recent Logins</h3>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>IP</th>
+        <th>Device</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody id="loginList">
+      <tr><td colspan="4">Loading...</td></tr>
+    </tbody>
+  </table>
+
+  <hr />
+
+  <h3>Suspicious Activity</h3>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Email Attempted</th>
+        <th>IP</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody id="failList">
+      <tr><td colspan="3">Loading...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    async function saveSettings(event) {
+      event.preventDefault();
+      const token = localStorage.getItem("access_token");
+
+      const body = {
+        enable_2fa: document.getElementById("enable_2fa").checked,
+        ip_whitelist: document.getElementById("ip_whitelist").value
+      };
+
+      const res = await fetch("/admin/security", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (res.ok) {
+        document.getElementById("settingsStatus").innerText = "✅ Settings saved.";
+      } else {
+        document.getElementById("settingsStatus").innerText = "❌ Failed to save settings.";
+      }
+    }
+
+    async function loadLogins() {
+      const token = localStorage.getItem("access_token");
+
+      try {
+        const res = await fetch("/admin/logins", {
+          headers: { Authorization: "Bearer " + token }
+        });
+
+        const data = await res.json();
+        const tbody = document.getElementById("loginList");
+        tbody.innerHTML = "";
+
+        data.forEach(entry => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${entry.email}</td>
+              <td>${entry.ip}</td>
+              <td>${entry.device}</td>
+              <td>${entry.time}</td>
+            </tr>
+          `;
+        });
+      } catch {
+        document.getElementById("loginList").innerHTML = "<tr><td colspan='4'>Failed to load logins.</td></tr>";
+      }
+    }
+
+    async function loadFailures() {
+      const token = localStorage.getItem("access_token");
+
+      try {
+        const res = await fetch("/admin/failures", {
+          headers: { Authorization: "Bearer " + token }
+        });
+
+        const data = await res.json();
+        const tbody = document.getElementById("failList");
+        tbody.innerHTML = "";
+
+        data.forEach(entry => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${entry.email}</td>
+              <td>${entry.ip}</td>
+              <td>${entry.time}</td>
+            </tr>
+          `;
+        });
+      } catch {
+        document.getElementById("failList").innerHTML = "<tr><td colspan='3'>Failed to load attempts.</td></tr>";
+      }
+    }
+
+    loadLogins();
+    loadFailures();
+  </script>
 {% endblock %}

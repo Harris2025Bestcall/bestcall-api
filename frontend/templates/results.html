@@ -1,60 +1,42 @@
-{% extends "base.html" %}
-{% block content %}
-  <h2 class="page-title">Prediction Results</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Client Results - BestCall AI</title>
+</head>
+<body>
+  <h1>Prediction Results for Client: {{ client_id }}</h1>
 
-  <div class="results-grid">
-    <!-- GPT Prediction -->
-    <div class="card">
-      <h3>✅ GPT Approval Structure</h3>
-      {% if gpt_prediction %}
-        <ul>
-          {% for key, value in gpt_prediction.items() %}
-            <li><strong>{{ key.replace('_', ' ').title() }}:</strong> {{ value }}</li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No GPT prediction available.</p>
-      {% endif %}
-    </div>
+  <section>
+    <h2>GPT Prediction</h2>
+    {% if gpt_prediction.error %}
+      <p style="color: red;">Error: {{ gpt_prediction.error }}</p>
+    {% else %}
+      <pre>{{ gpt_prediction | tojson(indent=2) }}</pre>
+    {% endif %}
+  </section>
 
-    <!-- ML Prediction -->
-    <div class="card">
-      <h3>📊 ML Prediction</h3>
-      {% if ml_prediction %}
-        <ul>
-          {% for key, value in ml_prediction.items() %}
-            <li><strong>{{ key.replace('_', ' ').title() }}:</strong> {{ value }}</li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No ML prediction available.</p>
-      {% endif %}
-    </div>
+  <section>
+    <h2>Machine Learning Prediction</h2>
+    <pre>{{ ml_prediction | tojson(indent=2) }}</pre>
+  </section>
 
-    <!-- Vehicle Match -->
-    <div class="card full-width">
-      <h3>🚗 Vehicle Match Recommendation</h3>
-      {% if vehicle_match %}
-        <table class="inventory-table">
-          <tr>
-            <th>Year</th><th>Make</th><th>Model</th><th>Retail</th><th>Book</th><th>Cost</th>
-          </tr>
-          <tr>
-            <td>{{ vehicle_match.year }}</td>
-            <td>{{ vehicle_match.make }}</td>
-            <td>{{ vehicle_match.model }}</td>
-            <td>${{ vehicle_match.retail_price }}</td>
-            <td>${{ vehicle_match.book_value }}</td>
-            <td>${{ vehicle_match.dealer_cost }}</td>
-          </tr>
-        </table>
-      {% else %}
-        <p>No vehicle match found.</p>
-      {% endif %}
-    </div>
-  </div>
+  <section>
+    <h2>Matched Vehicle (if any)</h2>
+    {% if vehicle_match %}
+      <pre>{{ vehicle_match | tojson(indent=2) }}</pre>
+    {% else %}
+      <p>No vehicle match found for this profile.</p>
+    {% endif %}
+  </section>
 
-  <div class="button-group">
-    <a href="/client/dashboard"><button>Start New Review</button></a>
-  </div>
-{% endblock %}
+  <br />
+  <button onclick="goBack()">⬅ Back to History</button>
+
+  <script>
+    function goBack() {
+      window.location.href = "/client/history";
+    }
+  </script>
+</body>
+</html>

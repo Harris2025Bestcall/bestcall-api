@@ -1,5 +1,25 @@
 {% extends "admin/base_system_ops.html" %}
+
+{% block title %}System Operations - BestCall AI{% endblock %}
+
 {% block content %}
-  <h1>Page Title</h1>
-  <!-- Add content here -->
+  <h1>System Operations Overview</h1>
+
+  <div>
+    <p><strong>Model Accuracy:</strong> 86%</p>
+    <p><strong>Last Update:</strong> 05/29/2025</p>
+    <p><strong>Total Dealer Portals:</strong> 30</p>
+    <p><strong>Total Active Users:</strong> 38</p>
+  </div>
+
+  <div style="margin-top: 20px;">
+    <h3>Sections</h3>
+    <ul>
+      <li><a href="/system-operations/performance">AI Performance Logs</a></li>
+      <li><a href="/system-operations/team">Team Management</a></li>
+      <li><a href="/system-operations/dealers">Dealership Portals</a></li>
+      <li><a href="/system-operations/security">Security & Access</a></li>
+      <li><a href="/system-operations/settings">System Settings</a></li>
+    </ul>
+  </div>
 {% endblock %}

@@ -1,39 +1,62 @@
-{% extends "base.html" %}
-{% block content %}
-  <h2 class="page-title">Manual Upload</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Start Review - BestCall AI</title>
+</head>
+<body>
+  <h1>Start a New Client Review</h1>
 
-  <div class="card full-width">
-    <form id="manualUploadForm">
-      <label>📄 Credit Application PDF</label>
-      <input type="file" name="credit_app" required /><br><br>
+  <form id="uploadForm" onsubmit="submitForm(event)">
+    <label>Credit Application (PDF):</label><br />
+    <input type="file" id="credit_app" accept="application/pdf" required /><br /><br />
 
-      <label>📄 Credit Report PDF</label>
-      <input type="file" name="credit_report" required /><br><br>
+    <label>Credit Report (PDF):</label><br />
+    <input type="file" id="credit_report" accept="application/pdf" required /><br /><br />
 
-      <button type="submit">Submit for Prediction</button>
-    </form>
-  </div>
+    <button type="submit">Upload & Predict</button>
+  </form>
+
+  <div id="result" style="margin-top: 20px;"></div>
 
   <script>
-    const form = document.getElementById('manualUploadForm');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-
-      const res = await fetch("/upload/", {
-        method: "POST",
-        headers: {
-          "x-api-key": "your-api-key-here"
-        },
-        body: formData
-      });
-
-      const data = await res.json();
-      if (data.client_id) {
-        window.location.href = `/client/results?client_id=${data.client_id}`;
-      } else {
-        alert("Upload failed. Please try again.");
+    async function submitForm(event) {
+      event.preventDefault();
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        alert("Not authenticated");
+        window.location.href = "/client/login";
+        return;
       }
-    });
+
+      const formData = new FormData();
+      formData.append("credit_app", document.getElementById("credit_app").files[0]);
+      formData.append("credit_report", document.getElementById("credit_report").files[0]);
+
+      try {
+        const res = await fetch("/upload/", {
+          method: "POST",
+          body: formData,
+          headers: {
+            Authorization: "Bearer " + token
+          }
+        });
+
+        if (!res.ok) throw new Error("Upload failed");
+        const data = await res.json();
+
+        document.getElementById("result").innerHTML = `
+          <h3>Prediction Results</h3>
+          <p><strong>Client ID:</strong> ${data.client_id}</p>
+          <p><strong>GPT Prediction:</strong> ${JSON.stringify(data.gpt_prediction)}</p>
+          <p><strong>ML Prediction:</strong> ${JSON.stringify(data.ml_prediction)}</p>
+          <p><strong>Vehicle Match:</strong> ${JSON.stringify(data.vehicle_match)}</p>
+          <a href="/client/results?client_id=${data.client_id}">🔍 View Detailed Results</a>
+        `;
+      } catch (err) {
+        document.getElementById("result").innerText = err.message;
+      }
+    }
   </script>
-{% endblock %}
+</body>
+</html>

@@ -1,25 +1,38 @@
-<!-- base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <title>{% block title %}BestCall AI{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BestCall AI</title>
-  <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body>
-  <header>
-    <h1 class="logo">BestCall AI</h1>
-    <nav>
-      <a href="/client/dashboard">Home</a>
-      <a href="/client/history">History</a>
-      <a href="/client/inventory">Inventory</a>
-      <a href="/logout">Logout</a>
-    </nav>
-  </header>
+  <nav>
+    <button onclick="goTo('/client/dashboard')">Dashboard</button>
+    <button onclick="goTo('/client/history')">History</button>
+    <button onclick="goTo('/client/inventory')">Inventory</button>
+    <button onclick="goTo('/upload.html')">Upload</button>
+    <button onclick="logout()">Logout</button>
+  </nav>
 
-  <main>
+  <div id="content">
     {% block content %}{% endblock %}
-  </main>
+  </div>
+
+  <script>
+    function goTo(path) {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        alert("Not authenticated");
+        window.location.href = "/client/login";
+        return;
+      }
+      window.location.href = path;
+    }
+
+    function logout() {
+      localStorage.removeItem("access_token");
+      window.location.href = "/client/login";
+    }
+  </script>
 </body>
 </html>

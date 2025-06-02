@@ -1,45 +1,60 @@
-{% extends "base.html" %}
-{% block content %}
-  <h2 class="page-title">Review History</h2>
-
-  <div class="card full-width">
-    <table class="inventory-table" id="historyTable">
-      <thead>
-        <tr>
-          <th>Client ID</th>
-          <th>Suggested Bank</th>
-          <th>Match Found</th>
-          <th>Recommended Vehicle</th>
-          <th>Timestamp</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Review History - BestCall AI</title>
+</head>
+<body>
+  <h1>Client Review History</h1>
+  <div id="history">Loading...</div>
 
   <script>
     async function fetchHistory() {
-      const res = await fetch("/history", {
-        headers: { "x-api-key": "your-api-key-here" }
-      });
-      const data = await res.json();
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        alert("Not authenticated");
+        window.location.href = "/client/login";
+        return;
+      }
 
-      const tableBody = document.querySelector("#historyTable tbody");
-      tableBody.innerHTML = "";
+      try {
+        const res = await fetch("/history", {
+          method: "GET",
+          headers: {
+            Authorization: "Bearer " + token
+          }
+        });
 
-      data.forEach(item => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${item.client_id}</td>
-          <td>${item.gpt_prediction?.recommended_bank || '-'}</td>
-          <td>${item.ml_prediction?.match === true ? '✅ Yes' : '❌ No'}</td>
-          <td>${item.vehicle_match?.make || '-'} ${item.vehicle_match?.model || ''}</td>
-          <td>${item.timestamp}</td>
-        `;
-        tableBody.appendChild(row);
-      });
+        if (!res.ok) throw new Error("Failed to load history");
+
+        const data = await res.json();
+        if (data.length === 0) {
+          document.getElementById("history").innerHTML = "<p>No history found.</p>";
+          return;
+        }
+
+        let html = "<ul>";
+        for (const item of data) {
+          html += `
+            <li style="margin-bottom: 12px;">
+              <strong>Client:</strong> ${item.client_id}<br />
+              <strong>Time:</strong> ${item.timestamp}<br />
+              <strong>Vehicle Match:</strong> ${JSON.stringify(item.vehicle_match)}<br />
+              <strong>GPT:</strong> ${JSON.stringify(item.gpt_prediction)}<br />
+              <strong>ML:</strong> ${JSON.stringify(item.ml_prediction)}<br />
+              <a href="/client/results?client_id=${item.client_id}">View Full Results</a>
+            </li>
+          `;
+        }
+        html += "</ul>";
+        document.getElementById("history").innerHTML = html;
+
+      } catch (err) {
+        document.getElementById("history").innerText = err.message;
+      }
     }
 
     fetchHistory();
   </script>
-{% endblock %}
+</body>
+</html>

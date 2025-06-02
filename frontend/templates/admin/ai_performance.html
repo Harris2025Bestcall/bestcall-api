@@ -1,48 +1,71 @@
 {% extends "admin/base_system_ops.html" %}
+
+{% block title %}AI Performance Logs - BestCall AI{% endblock %}
+
 {% block content %}
-<h1>AI Performance Logs</h1>
+  <h1>AI Performance Logs</h1>
 
-<table id="performance-table" border="1">
-  <thead>
-    <tr>
-      <th>Client ID</th>
-      <th>Timestamp</th>
-      <th>Matched</th>
-      <th>Total</th>
-      <th>Accuracy</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <table border="1" style="margin-top: 20px;" id="logTable">
+    <thead>
+      <tr>
+        <th>Client ID</th>
+        <th>Timestamp</th>
+        <th>Matched</th>
+        <th>Total</th>
+        <th>Accuracy</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody id="logBody">
+      <tr><td colspan="6">Loading...</td></tr>
+    </tbody>
+  </table>
 
-<button onclick="triggerRetrain()">Retrain Now</button>
-{% endblock %}
+  <script>
+    async function loadLogs() {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        alert("Not authenticated");
+        window.location.href = "/client/login";
+        return;
+      }
 
-{% block script %}
-<script>
-  async function loadPerformanceLogs() {
-    const res = await fetch('/admin/performance/data');
-    const data = await res.json();
-    const tbody = document.querySelector("#performance-table tbody");
-    tbody.innerHTML = "";
-    data.forEach(entry => {
-      const row = `<tr>
-        <td>${entry.client_id}</td>
-        <td>${entry.timestamp}</td>
-        <td>${entry.matched}</td>
-        <td>${entry.total}</td>
-        <td>${entry.accuracy}</td>
-      </tr>`;
-      tbody.innerHTML += row;
-    });
-  }
+      try {
+        const res = await fetch("/admin/performance/data", {
+          headers: {
+            Authorization: "Bearer " + token
+          }
+        });
 
-  async function triggerRetrain() {
-    await fetch('/train/', { method: 'POST' });
-    alert("Retraining started!");
-    loadPerformanceLogs();
-  }
+        if (!res.ok) throw new Error("Failed to load logs");
+        const data = await res.json();
 
-  loadPerformanceLogs();
-</script>
+        const tbody = document.getElementById("logBody");
+        tbody.innerHTML = "";
+
+        data.forEach(entry => {
+          const row = `
+            <tr>
+              <td>${entry.client_id}</td>
+              <td>${entry.timestamp || "—"}</td>
+              <td>${entry.matched}</td>
+              <td>${entry.total}</td>
+              <td>${entry.accuracy}</td>
+              <td><pre style="white-space:pre-wrap">${JSON.stringify(entry.details, null, 2)}</pre></td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+
+        if (data.length === 0) {
+          tbody.innerHTML = "<tr><td colspan='6'>No logs found.</td></tr>";
+        }
+
+      } catch (err) {
+        document.getElementById("logBody").innerHTML = `<tr><td colspan="6">${err.message}</td></tr>`;
+      }
+    }
+
+    loadLogs();
+  </script>
 {% endblock %}
