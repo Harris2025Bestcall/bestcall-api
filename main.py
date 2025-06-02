@@ -72,8 +72,8 @@ async def login(response: Response, email: str = Form(...), password: str = Form
                 session_id,
                 httponly=True,
                 max_age=3600,
-                secure=True,
-                samesite="none"
+                secure=False,
+                samesite="lax"
             )
             return res
     raise HTTPException(status_code=401, detail="Invalid login")
