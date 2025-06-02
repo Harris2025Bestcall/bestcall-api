@@ -31,3 +31,5 @@ pdfplumber
 openai
 python_multipart
 itsdangerous
+jinja2
+python-jose[cryptography]
