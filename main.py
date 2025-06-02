@@ -7,10 +7,9 @@ import os, shutil, uuid, json, hashlib
 import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
-from supabase import create_client
 from typing import Optional
+from supabase import create_client
 
-# Core imports
 from scripts.parse_credit_app_pdf_ai import extract_from_credit_app
 from scripts.parse_credit_report_pdf_ai import extract_from_credit_report
 from scripts.predict_approval_gpt import predict_approval
@@ -18,19 +17,20 @@ from scripts.predict_approval_from_json import predict_approval as predict_ml
 from scripts.train_from_actuals import train_from_actuals
 from scripts.analyze_approval_history_ai import summarize_training_log
 from scripts.predict_vehicle_match import match_vehicle_to_profile
-from utils.security import verify_key
 
-# Setup
-load_dotenv()
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
+# === Init FastAPI ===
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 templates = Jinja2Templates(directory="frontend/templates")
 
+# === Supabase setup ===
+load_dotenv()
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# === Auth Session Setup ===
 SESSION_COOKIE_NAME = "bestcall_session"
 USERS_FILE = "data/users.json"
 
@@ -56,27 +56,33 @@ def get_current_user(session_id: Optional[str] = Cookie(None)):
             return user
     raise HTTPException(status_code=401, detail="Invalid session")
 
-# === Routes ===
-@app.get("/", response_class=HTMLResponse)
-def root():
-    return {"message": "BestCall AI is live."}
-
-@app.get("/client/login", response_class=HTMLResponse)
-def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+@app.get("/logtest")
+def logtest():
+    users = load_users()
+    return {
+        "status": "active",
+        "user_count": len(users),
+        "users": users
+    }
 
 @app.post("/auth/login")
 async def login(response: Response, email: str = Form(...), password: str = Form(...)):
     users = load_users()
     input_hash = hash_password(password)
 
+    print("🔐 Attempting login for:", email)
+    print("🔑 Hashed input password:", input_hash)
+
     for user in users:
+        print("🧾 Stored user:", user["email"], "| Password hash:", user["password"])
         if user["email"] == email and user["password"] == input_hash:
+            print("✅ Match found! Logging in:", email)
             session_id = hash_password(email)
             res = RedirectResponse(url="/client/dashboard", status_code=302)
             res.set_cookie(SESSION_COOKIE_NAME, session_id, httponly=True, max_age=3600)
             return res
 
+    print("❌ Login failed for:", email)
     raise HTTPException(status_code=401, detail="Invalid login")
 
 @app.get("/logout")
@@ -98,6 +104,15 @@ def create_user(email: str = Form(...), password: str = Form(...), name: str = F
     })
     save_users(users)
     return {"status": "User created"}
+
+# === UI Routes ===
+@app.get("/", response_class=HTMLResponse)
+def root():
+    return {"message": "BestCall AI is live."}
+
+@app.get("/client/login", response_class=HTMLResponse)
+def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
 
 @app.get("/client/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request, user: dict = Depends(get_current_user)):
@@ -136,6 +151,7 @@ def show_results(request: Request, client_id: str, user: dict = Depends(get_curr
             "vehicle_match": None
         })
 
+# === API Endpoints ===
 @app.get("/inventory")
 def get_inventory():
     try:
@@ -184,12 +200,7 @@ async def upload(
 
     app_data = extract_from_credit_app(os.path.join(base, "credit_app.pdf"), cid)
     report_data = extract_from_credit_report(os.path.join(base, "credit_report.pdf"), cid)
-
-    merged = {
-        "client_id": cid,
-        "application": app_data,
-        "credit_report": report_data
-    }
+    merged = {"client_id": cid, "application": app_data, "credit_report": report_data}
 
     try:
         merged["vehicle_match"] = match_vehicle_to_profile(base, supabase)
@@ -227,9 +238,3 @@ async def upload_actuals(
 @app.get("/metrics")
 def get_metrics():
     return summarize_training_log()
-
-# ✅ NEW DEBUG ROUTE
-@app.get("/logtest")
-def log_test():
-    users = load_users()
-    return {"status": "active", "user_count": len(users), "users": users}
