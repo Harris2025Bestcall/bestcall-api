@@ -1,4 +1,3 @@
-# main.py
 from fastapi import FastAPI, UploadFile, File, Form, Depends, Request, Response, HTTPException, Header
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,9 +17,8 @@ from scripts.predict_approval_from_json import predict_approval as predict_ml
 from scripts.train_from_actuals import train_from_actuals
 from scripts.analyze_approval_history_ai import summarize_training_log
 from scripts.predict_vehicle_match import match_vehicle_to_profile
-from utils.security import get_current_user
 
-# Optional if using Supabase inventory
+# Optional Supabase
 try:
     from supabase import create_client
 except:
@@ -33,10 +31,7 @@ JWT_SECRET = os.getenv("JWT_SECRET", "your-very-secret-key")
 JWT_ALGORITHM = "HS256"
 JWT_EXP_MINUTES = 60
 
-if create_client:
-    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-else:
-    supabase = None
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if create_client else None
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
@@ -45,6 +40,7 @@ templates = Jinja2Templates(directory="frontend/templates")
 
 USERS_FILE = "data/users.json"
 
+# --- Auth Utilities ---
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -64,6 +60,22 @@ def create_token(data: dict):
     payload.update({"exp": expire})
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
+def get_current_user(authorization: str = Header(...)):
+    try:
+        scheme, _, token = authorization.partition(" ")
+        if scheme.lower() != "bearer":
+            raise HTTPException(status_code=403, detail="Invalid auth scheme")
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        email = payload.get("sub")
+        users = load_users()
+        for user in users:
+            if user["email"] == email:
+                return user
+        raise HTTPException(status_code=401, detail="User not found")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+# --- Public Routes ---
 @app.get("/")
 def root():
     return JSONResponse(content={"message": "BestCall AI is live."})
@@ -96,12 +108,7 @@ def create_user(email: str = Form(...), password: str = Form(...), name: str = F
     save_users(users)
     return {"status": "User created"}
 
-@app.get("/admin/users")
-def list_all_users(user: dict = Depends(get_current_user)):
-    if user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Not authorized")
-    return load_users()
-
+# --- Client Portal ---
 @app.get("/client/login", response_class=HTMLResponse)
 def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
@@ -143,6 +150,7 @@ def show_results(request: Request, client_id: str, user: dict = Depends(get_curr
             "vehicle_match": None
         })
 
+# --- Upload & Prediction Flow ---
 @app.get("/upload", response_class=HTMLResponse)
 async def upload_page(request: Request, user: dict = Depends(get_current_user)):
     return templates.TemplateResponse("upload.html", {"request": request})
@@ -189,6 +197,7 @@ async def upload_predict(
         "approval_structure": gpt.get("approval_structure", {})
     }
 
+# --- Training Upload for Admin
 @app.post("/train/")
 async def upload_actuals(client_id: str = Form(...), files: list[UploadFile] = File(...), user: dict = Depends(get_current_user)):
     base = f"data/training_clients/{client_id}/actual_bank_decisions"
@@ -198,6 +207,41 @@ async def upload_actuals(client_id: str = Form(...), files: list[UploadFile] = F
             shutil.copyfileobj(file.file, f)
     return train_from_actuals(client_id)
 
+# --- Admin Pages ---
+@app.get("/system-operations", response_class=HTMLResponse)
+def system_ops_home(request: Request):
+    return templates.TemplateResponse("admin/system_ops.html", {"request": request})
+
+@app.get("/system-operations/performance", response_class=HTMLResponse)
+def system_ops_performance(request: Request):
+    return templates.TemplateResponse("admin/ai_performance.html", {"request": request})
+
+@app.get("/system-operations/team", response_class=HTMLResponse)
+def system_ops_team(request: Request):
+    return templates.TemplateResponse("admin/team_management.html", {"request": request})
+
+@app.get("/system-operations/security", response_class=HTMLResponse)
+def system_ops_security(request: Request):
+    return templates.TemplateResponse("admin/security_access.html", {"request": request})
+
+@app.get("/system-operations/dealers", response_class=HTMLResponse)
+def system_ops_dealers(request: Request):
+    return templates.TemplateResponse("admin/dealership_portals.html", {"request": request})
+
+@app.get("/system-operations/settings", response_class=HTMLResponse)
+def system_ops_settings(request: Request):
+    return templates.TemplateResponse("admin/system_settings.html", {"request": request})
+
+@app.get("/admin/performance/data")
+def get_ai_performance_logs(user: dict = Depends(get_current_user)):
+    log_path = "data/training_log.jsonl"
+    if not os.path.exists(log_path):
+        return []
+    with open(log_path, "r") as f:
+        lines = f.readlines()
+    return [json.loads(line.strip()) for line in lines]
+
+# --- APIs: Inventory & History ---
 @app.get("/inventory")
 def get_inventory():
     try:
@@ -232,36 +276,3 @@ def get_history():
 @app.get("/metrics")
 def get_metrics():
     return summarize_training_log()
-
-@app.get("/system-operations", response_class=HTMLResponse)
-def system_ops_home(request: Request):
-    return templates.TemplateResponse("admin/system_ops.html", {"request": request})
-
-@app.get("/system-operations/performance", response_class=HTMLResponse)
-def system_ops_performance(request: Request):
-    return templates.TemplateResponse("admin/ai_performance.html", {"request": request})
-
-@app.get("/system-operations/team", response_class=HTMLResponse)
-def system_ops_team(request: Request):
-    return templates.TemplateResponse("admin/team_management.html", {"request": request})
-
-@app.get("/system-operations/security", response_class=HTMLResponse)
-def system_ops_security(request: Request):
-    return templates.TemplateResponse("admin/security_access.html", {"request": request})
-
-@app.get("/system-operations/dealers", response_class=HTMLResponse)
-def system_ops_dealers(request: Request):
-    return templates.TemplateResponse("admin/dealership_portals.html", {"request": request})
-
-@app.get("/system-operations/settings", response_class=HTMLResponse)
-def system_ops_settings(request: Request):
-    return templates.TemplateResponse("admin/system_settings.html", {"request": request})
-
-@app.get("/admin/performance/data")
-def get_ai_performance_logs(user: dict = Depends(get_current_user)):
-    log_path = "data/training_log.jsonl"
-    if not os.path.exists(log_path):
-        return []
-    with open(log_path, "r") as f:
-        lines = f.readlines()
-    return [json.loads(line.strip()) for line in lines]
