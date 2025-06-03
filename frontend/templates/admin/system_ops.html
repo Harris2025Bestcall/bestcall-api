@@ -9,35 +9,49 @@
 <body class="bg-green-900 font-sans text-white">
   <div id="dashboard" class="min-h-screen p-8">
     <div class="max-w-7xl mx-auto">
-      <!-- Header -->
       <h1 class="text-4xl font-bold mb-8">System Operations</h1>
 
       <!-- Onboarding / Model Training Section -->
       <section id="training" class="bg-green-800 rounded-xl p-8 shadow-xl mb-12">
         <h2 class="text-3xl font-bold mb-6">Onboarding / Model Training</h2>
 
-        <!-- Step 1: Upload Baseline Data -->
-        <div class="grid md:grid-cols-2 gap-6 mb-8">
-          <form action="/upload-bank-summary" method="post" enctype="multipart/form-data">
-            <label class="block mb-2 text-lg">Upload Bank Summary (.csv)</label>
-            <input type="file" name="bank_summary" required class="w-full p-2 mb-4 bg-white text-black rounded">
-            <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Upload Bank Summary</button>
-          </form>
-
-          <form action="/upload-inventory" method="post" enctype="multipart/form-data">
-            <label class="block mb-2 text-lg">Upload Inventory (.csv)</label>
-            <input type="file" name="inventory" required class="w-full p-2 mb-4 bg-white text-black rounded">
-            <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Upload Inventory</button>
-          </form>
+        <!-- Select Dealer -->
+        <div class="mb-6">
+          <label class="block mb-2 text-lg">Select Dealer Profile to Train</label>
+          <select name="dealer_id" class="w-full p-2 rounded bg-white text-black">
+            <option value="dealer1">Dealer 1</option>
+            <option value="dealer2">Dealer 2</option>
+            <option value="dealer3">Dealer 3</option>
+          </select>
         </div>
+
+        <!-- Step 1: Upload Baseline Data -->
+        <fieldset class="mb-8" disabled>
+          <div class="grid md:grid-cols-2 gap-6">
+            <form action="/upload-bank-summary" method="post" enctype="multipart/form-data">
+              <label class="block mb-2 text-lg">Upload Bank Summary (.csv)</label>
+              <input type="file" name="bank_summary" class="w-full p-2 mb-4 bg-white text-black rounded">
+              <button class="bg-gray-500 px-4 py-2 rounded cursor-not-allowed">Uploaded</button>
+              <button class="ml-2 text-sm underline text-blue-300">Update Data</button>
+            </form>
+
+            <form action="/upload-inventory" method="post" enctype="multipart/form-data">
+              <label class="block mb-2 text-lg">Upload Inventory (.csv)</label>
+              <input type="file" name="inventory" class="w-full p-2 mb-4 bg-white text-black rounded">
+              <button class="bg-gray-500 px-4 py-2 rounded cursor-not-allowed">Uploaded</button>
+              <button class="ml-2 text-sm underline text-blue-300">Update Data</button>
+            </form>
+          </div>
+        </fieldset>
 
         <!-- Step 2: Summarize Bank Patterns -->
         <div class="mb-6">
           <h3 class="text-xl font-semibold mb-2">Review & Summarize</h3>
           <button class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded">Generate bank_patterns_summary.md</button>
           <div class="w-full bg-gray-700 h-4 mt-3 rounded">
-            <div class="bg-blue-500 h-4 rounded text-xs text-center text-white" style="width: 35%">Reviewing data...</div>
+            <div class="bg-blue-500 h-4 rounded text-xs text-center text-white" style="width: 100%">Baseline data processed</div>
           </div>
+          <button class="mt-2 text-sm underline text-blue-300">Review bank_patterns_summary.md</button>
         </div>
 
         <!-- Step 3: Begin Training Phase -->
@@ -60,9 +74,16 @@
         <!-- Step 4: Upload Actual Bank Decisions -->
         <div class="mt-8 mb-4">
           <h3 class="text-xl font-semibold mb-2">Upload Actual Results (up to 8 PDFs)</h3>
-          <form action="/upload-actual-results" method="post" enctype="multipart/form-data">
-            <input type="file" name="actual_results" multiple class="w-full p-2 mb-4 bg-white text-black rounded">
-            <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Upload Actual Results</button>
+          <form action="/upload-actual-results" method="post" enctype="multipart/form-data" class="space-y-2">
+            <input type="file" name="actual_result_1" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" name="actual_result_2" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" name="actual_result_3" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" name="actual_result_4" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" name="actual_result_5" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" name="actual_result_6" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" name="actual_result_7" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" name="actual_result_8" class="w-full p-2 bg-white text-black rounded">
+            <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 mt-2 rounded">Upload Actual Results</button>
           </form>
         </div>
 
@@ -71,6 +92,12 @@
           <h3 class="text-xl font-semibold mb-2">Compare and Train</h3>
           <p class="text-sm text-gray-200 mb-2">System will analyze its prediction vs actual decisions and update the training model.</p>
           <button class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">Compare and Train</button>
+
+          <!-- Training Feedback -->
+          <div class="w-full bg-gray-700 h-4 mt-4 rounded">
+            <div class="bg-blue-500 h-4 rounded text-xs text-center text-white" style="width: 100%">Successfully Retrained – System Processed</div>
+          </div>
+          <button class="mt-4 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded">Train on Another Example</button>
         </div>
       </section>
 
