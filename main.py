@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from jose import JWTError, jwt
 from typing import Optional
+from scripts.admin_routes import router as admin_router
 
 from scripts.parse_credit_app_pdf_ai import extract_from_credit_app
 from scripts.parse_credit_report_pdf_ai import extract_from_credit_report
@@ -35,6 +36,7 @@ JWT_EXP_MINUTES = 60
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if create_client else None
 
 app = FastAPI()
+app.include_router(admin_router, prefix="/admin")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 templates = Jinja2Templates(directory="frontend/templates")
