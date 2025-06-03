@@ -1,1 +1,51 @@
+# Bytecode + Cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environment
+.venv/
+env/
+venv/
+ENV/
+
+# Environment Variables
 .env
+.env.*
+
+# VSCode settings
+.vscode/
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# FastAPI Static Uploads
+temp_uploads/
+ocr_output.txt
+
+# Training Client Data (sensitive)
+data/training_clients/
+data/output_profiles/
+data/inventory/cleaned vehicle inventory.csv
+
+# Dealer-Specific Models (optional: include example, not real data)
+data/dealers/*/approval_predictor.pkl
+data/dealers/*/feature_encoder.json
+data/dealers/*/training_dataset.csv
+data/dealers/*/bank_decisions.csv
+data/dealers/*/inventory.csv
+
+# Logs
+*.log
+*.jsonl
+
+# Notebooks Output
+*.ipynb_checkpoints
+
+# Model artifacts
+models/*.pkl
+
+# OS files
+*.swp

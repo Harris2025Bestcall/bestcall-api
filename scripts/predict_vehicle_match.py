@@ -2,56 +2,50 @@ import os
 import json
 import pandas as pd
 
-def match_vehicle_to_profile(client_folder: str):
-    profile_path = os.path.join(client_folder, "client_profile.json")
-    inventory_path = "data/inventory/cleaned vehicle inventory.csv"
-
-    # Load client profile
+def match_vehicle_to_profile(client_path: str, supabase=None, dealer_id: str = "dealer1") -> dict:
+    profile_path = os.path.join(client_path, "client_profile.json")
     if not os.path.exists(profile_path):
-        raise FileNotFoundError(f"Client profile not found at {profile_path}")
-    
+        return {"error": "Client profile not found."}
+
     with open(profile_path, "r") as f:
         profile = json.load(f)
 
+    fico = profile.get("credit_report", {}).get("fico_score", 0)
+    income_str = profile.get("application", {}).get("income", {}).get("gross_monthly", "0")
+    try:
+        income = float(income_str.replace("$", "").replace(",", "").strip())
+    except:
+        income = 0.0
+
     # Load inventory
+    inventory_path = os.path.join("data", "dealers", dealer_id, "inventory.csv")
     if not os.path.exists(inventory_path):
-        raise FileNotFoundError("Inventory file not found.")
-    
-    inventory = pd.read_csv(inventory_path)
+        return {"error": f"Inventory not found for dealer '{dealer_id}'."}
 
-    # Extract prediction structure
-    predicted = profile.get("predicted_structure", {})
-    if not predicted:
-        return None
+    try:
+        df = pd.read_csv(inventory_path)
+    except Exception as e:
+        return {"error": f"Failed to read inventory: {str(e)}"}
 
-    approval_amount = predicted.get("predicted_approval_amount", 0)
-    max_ltv = predicted.get("max_ltv", 0)
-    term = predicted.get("term_months", 0)
+    # Optional: Filter based on FICO or income range (this is basic logic)
+    filtered = df[
+        (df.get("min_fico", 0) <= fico) & 
+        (df.get("min_income", 0) <= income)
+    ].copy()
 
-    # Filter inventory within approval limits
-    matches = []
-    for _, row in inventory.iterrows():
-        retail_value = row.get("retail_value", 0)
-        dealer_cost = row.get("dealer_cost", 0)
+    if filtered.empty:
+        return {"match": None, "reason": "No vehicles met credit/income criteria."}
 
-        if retail_value <= approval_amount:
-            ltv = (retail_value / approval_amount) * 100
-            estimated_gross = retail_value - dealer_cost
-            matches.append({
-                "year": row.get("year"),
-                "make": row.get("make"),
-                "model": row.get("model"),
-                "retail_value": retail_value,
-                "dealer_cost": dealer_cost,
-                "suggested_LTV": f"{ltv:.1f}%",
-                "estimated_gross": estimated_gross
-            })
+    # Return best match — could use price, year, or priority score
+    best_match = filtered.sort_values(by="price", ascending=True).iloc[0].to_dict()
 
-    if not matches:
-        return None
+    return {
+        "match": best_match,
+        "fico": fico,
+        "income": income,
+        "inventory_considered": len(filtered)
+    }
 
-    # Sort by estimated profit descending
-    matches.sort(key=lambda x: x["estimated_gross"], reverse=True)
-
-    best_match = matches[0]
-    return best_match
+if __name__ == "__main__":
+    result = match_vehicle_to_profile("data/training_clients/client_001", dealer_id="dealer1")
+    print(json.dumps(result, indent=2))

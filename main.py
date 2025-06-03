@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, UploadFile, File, Form, Depends, Request, Response, HTTPException, Header
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -177,10 +178,13 @@ async def upload_predict(
     report_data = extract_from_credit_report(report_path, cid)
     merged = {"client_id": cid, "application": app_data, "credit_report": report_data}
 
+    # Use dealer1 for now — replace with dynamic lookup later
+    dealer_id = "dealer1"
+
     try:
-        merged["vehicle_match"] = match_vehicle_to_profile(base, supabase) if supabase else None
-    except:
-        merged["vehicle_match"] = None
+        merged["vehicle_match"] = match_vehicle_to_profile(base, supabase, dealer_id=dealer_id)
+    except Exception as e:
+        merged["vehicle_match"] = {"error": str(e)}
 
     with open(os.path.join(base, "client_profile.json"), "w") as f:
         json.dump(merged, f, indent=2)
@@ -192,12 +196,21 @@ async def upload_predict(
     return {
         "client_id": cid,
         "gpt_prediction": gpt,
+        "ml_prediction": predict_ml(cid, dealer_id=dealer_id),
+        "vehicle_match": merged["vehicle_match"],
+        "approval_structure": gpt.get("approval_structure", {})
+    }
+
+
+    return {
+        "client_id": cid,
+        "gpt_prediction": gpt,
         "ml_prediction": predict_ml(cid),
         "vehicle_match": merged["vehicle_match"],
         "approval_structure": gpt.get("approval_structure", {})
     }
 
-# --- Training Upload for Admin
+# --- Training Upload for Admin ---
 @app.post("/train/")
 async def upload_actuals(client_id: str = Form(...), files: list[UploadFile] = File(...), user: dict = Depends(get_current_user)):
     base = f"data/training_clients/{client_id}/actual_bank_decisions"
@@ -206,6 +219,16 @@ async def upload_actuals(client_id: str = Form(...), files: list[UploadFile] = F
         with open(os.path.join(base, f"decision_{i}.pdf"), "wb") as f:
             shutil.copyfileobj(file.file, f)
     return train_from_actuals(client_id)
+
+# --- New Route: Upload Inventory to Dealer Folder ---
+@app.post("/system-operations/train/{dealer_id}/inventory")
+async def upload_inventory(dealer_id: str, file: UploadFile = File(...), user: dict = Depends(get_current_user)):
+    dealer_folder = f"data/dealers/{dealer_id}"
+    os.makedirs(dealer_folder, exist_ok=True)
+    file_path = os.path.join(dealer_folder, "inventory.csv")
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    return {"status": "success", "message": f"Inventory uploaded for {dealer_id}", "path": file_path}
 
 # --- Admin Pages ---
 @app.get("/system-operations", response_class=HTMLResponse)
@@ -276,3 +299,25 @@ def get_history():
 @app.get("/metrics")
 def get_metrics():
     return summarize_training_log()
+
+@app.post("/system-operations/train/{dealer_id}/decisions")
+async def upload_decision_data(dealer_id: str, file: UploadFile = File(...), user: dict = Depends(get_current_user)):
+    import subprocess
+
+    dealer_folder = f"data/dealers/{dealer_id}"
+    os.makedirs(dealer_folder, exist_ok=True)
+
+    decision_path = os.path.join(dealer_folder, "bank_decisions.csv")
+    with open(decision_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    try:
+        os.system(f"python scripts/generate_bank_summary_from_decisions.py {dealer_id}")
+        os.system(f"python scripts/build_training_dataset.py {dealer_id}")
+        os.system(f"python scripts/train_model.py {dealer_id}")
+        return {
+            "status": "success",
+            "message": f"Bank decisions uploaded and model trained for {dealer_id}"
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}

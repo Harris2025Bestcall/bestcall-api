@@ -1,25 +1,221 @@
-{% extends "admin/base_system_ops.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Operations - BestCall AI</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-green-900 font-sans text-white">
+  <div id="dashboard" class="min-h-screen p-10 bg-green-900">
+    <div class="max-w-7xl mx-auto">
 
-{% block title %}System Operations - BestCall AI{% endblock %}
+      <!-- System Overview -->
+      <div class="mb-10">
+        <h1 class="text-4xl font-bold mb-4">System Overview</h1>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bg-green-700 p-6 rounded-xl text-center shadow">
+            <p class="text-xl font-semibold">Total Active Users</p>
+            <p class="text-3xl font-bold mt-2">30</p>
+          </div>
+          <div class="bg-green-700 p-6 rounded-xl text-center shadow">
+            <p class="text-xl font-semibold">Total Dealer Portals</p>
+            <p class="text-3xl font-bold mt-2">3</p>
+          </div>
+          <div class="bg-green-700 p-6 rounded-xl text-center shadow">
+            <p class="text-xl font-semibold">Model Accuracy</p>
+            <p class="text-3xl font-bold mt-2">86%</p>
+          </div>
+          <div class="bg-green-700 p-6 rounded-xl text-center shadow">
+            <p class="text-xl font-semibold">Last Update</p>
+            <p class="text-2xl font-bold mt-2">05-29-2025</p>
+          </div>
+        </div>
+      </div>
 
-{% block content %}
-  <h1>System Operations Overview</h1>
+      <!-- Nav Links -->
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-12">
+        <a href="#performance" class="bg-blue-600 hover:bg-blue-700 p-4 text-center rounded-xl font-semibold shadow">AI Performance Logs</a>
+        <a href="#team" class="bg-blue-600 hover:bg-blue-700 p-4 text-center rounded-xl font-semibold shadow">Team Management</a>
+        <a href="#security" class="bg-blue-600 hover:bg-blue-700 p-4 text-center rounded-xl font-semibold shadow">Security & Access</a>
+        <a href="#dealers" class="bg-blue-600 hover:bg-blue-700 p-4 text-center rounded-xl font-semibold shadow">Dealership Portals</a>
+        <a href="#training" class="bg-blue-600 hover:bg-blue-700 p-4 text-center rounded-xl font-semibold shadow">Onboarding/Model Training</a>
+        <a href="#settings" class="bg-blue-600 hover:bg-blue-700 p-4 text-center rounded-xl font-semibold shadow">System Settings</a>
+      </div>
 
-  <div style="margin-top: 20px;">
-    <p><strong>Model Accuracy:</strong> 86%</p>
-    <p><strong>Last Update:</strong> 05/29/2025</p>
-    <p><strong>Total Dealer Portals:</strong> 30</p>
-    <p><strong>Total Active Users:</strong> 38</p>
+      <!-- Onboarding / Model Training -->
+      <div id="training" class="bg-green-800 rounded-xl p-8 shadow-xl mb-10">
+        <h2 class="text-3xl font-bold mb-6">Onboarding / Model Training</h2>
+        <form action="/admin/upload_actuals" method="post" enctype="multipart/form-data" class="mb-6">
+          <label class="block mb-2 text-lg">Upload Actual Decision(s)</label>
+          <input type="file" name="decision_files" multiple required class="block w-full p-2 rounded text-black bg-white mb-4">
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-semibold">Submit</button>
+        </form>
+        <div class="mb-6">
+          <label class="text-xl font-semibold">Dealer:</label>
+          <select class="w-full p-2 rounded text-black bg-white">
+            <option>Dealer 1</option>
+            <option>Dealer 2</option>
+          </select>
+        </div>
+        <div class="mb-6">
+          <label class="text-xl font-semibold">Onboarding Progress:</label>
+          <div class="flex gap-4">
+            <span class="flex items-center gap-2"><span class="h-4 w-4 rounded-full bg-green-400"></span> Baseline Uploaded</span>
+            <span class="flex items-center gap-2"><span class="h-4 w-4 rounded-full bg-yellow-400"></span> Model Trained</span>
+            <span class="flex items-center gap-2"><span class="h-4 w-4 rounded-full bg-gray-400"></span> Review in Progress</span>
+          </div>
+        </div>
+        <div>
+          <label class="text-xl font-semibold">Confidence Level</label>
+          <div class="w-full bg-gray-600 h-4 rounded">
+            <div class="bg-blue-500 h-4 rounded text-xs text-center text-white" style="width: 65%">Train system on 20 more files</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Performance Logs -->
+      <div id="performance" class="bg-green-800 rounded-xl p-8 shadow-xl mb-10">
+        <h2 class="text-3xl font-bold mb-6">AI Performance Logs</h2>
+        <table class="table-auto w-full text-left text-white">
+          <thead>
+            <tr>
+              <th class="p-2">Date</th>
+              <th class="p-2">Accuracy</th>
+              <th class="p-2">Clients Processed</th>
+              <th class="p-2">Mismatches</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t border-green-600">
+              <td class="p-2">May 22, 2025</td>
+              <td class="p-2">86.5%</td>
+              <td class="p-2">65</td>
+              <td class="p-2">9</td>
+            </tr>
+            <tr class="border-t border-green-600">
+              <td class="p-2">May 15, 2025</td>
+              <td class="p-2">85.5%</td>
+              <td class="p-2">49</td>
+              <td class="p-2">6</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Team Management -->
+      <div id="team" class="bg-green-800 rounded-xl p-8 shadow-xl mb-10">
+        <h2 class="text-3xl font-bold mb-6">Team Management</h2>
+        <form class="mb-4">
+          <div class="flex flex-col md:flex-row md:items-center md:gap-4">
+            <input type="email" placeholder="Email" class="p-2 rounded text-black bg-white w-full md:w-1/3">
+            <select class="p-2 rounded text-black bg-white w-full md:w-1/4">
+              <option>Admin Rep</option>
+              <option>Dealer Rep</option>
+            </select>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 mt-2 md:mt-0 rounded font-semibold">Add User</button>
+          </div>
+        </form>
+        <div>
+          <h3 class="text-xl font-semibold mb-2">User List</h3>
+          <table class="table-auto w-full text-left">
+            <thead>
+              <tr>
+                <th class="p-2">Email</th>
+                <th class="p-2">Role</th>
+                <th class="p-2">Dealership</th>
+                <th class="p-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-t border-green-600">
+                <td class="p-2">claire@example.com</td>
+                <td class="p-2">Admin Rep</td>
+                <td class="p-2">Example Dealership</td>
+                <td class="p-2">Active</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Security & Access -->
+      <div id="security" class="bg-green-800 rounded-xl p-8 shadow-xl mb-10">
+        <h2 class="text-3xl font-bold mb-6">Security & Access</h2>
+        <div class="mb-6">
+          <label class="text-lg">Two-Factor Authentication</label>
+          <div class="flex items-center gap-4 mt-2">
+            <input type="checkbox" id="2fa" class="form-checkbox h-5 w-5 text-blue-600">
+            <label for="2fa">Enable 2FA</label>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold mb-2">Login Activity</h3>
+          <ul class="text-sm">
+            <li>5 minutes ago — 192.168.1.10 — Atlanta, GA</li>
+            <li>3 hours ago — 23.88.150.8 — Unknown</li>
+            <li>2 days ago — 66.77.92.0 — Los Angeles, CA</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Dealership Portals -->
+      <div id="dealers" class="bg-green-800 rounded-xl p-8 shadow-xl mb-10">
+        <h2 class="text-3xl font-bold mb-6">Dealership Portals</h2>
+        <table class="table-auto w-full text-left">
+          <thead>
+            <tr>
+              <th class="p-2">Name</th>
+              <th class="p-2">City</th>
+              <th class="p-2">Users</th>
+              <th class="p-2">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t border-green-600">
+              <td class="p-2">Auto Plaza</td>
+              <td class="p-2">Houston</td>
+              <td class="p-2">2</td>
+              <td class="p-2">
+                <button class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">View</button>
+                <button class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded ml-2">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- System Settings -->
+      <div id="settings" class="bg-green-800 rounded-xl p-8 shadow-xl mb-10">
+        <h2 class="text-3xl font-bold mb-6">System Settings</h2>
+        <form>
+          <div class="mb-4">
+            <label class="block mb-1">Confidence Threshold</label>
+            <input type="text" placeholder="80%" class="p-2 w-full rounded text-black bg-white">
+          </div>
+          <div class="mb-4">
+            <label class="block mb-1">Retrain Frequency</label>
+            <select class="p-2 w-full rounded text-black bg-white">
+              <option>Weekly</option>
+              <option>Monthly</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block mb-1">Upload File Limit</label>
+            <input type="text" placeholder="50 MB" class="p-2 w-full rounded text-black bg-white">
+          </div>
+          <div class="mb-4">
+            <label class="block mb-1">Notifications</label>
+            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600">
+          </div>
+          <div class="mb-4">
+            <label class="block mb-1">Branding</label>
+            <input type="file" class="p-2 w-full rounded text-black bg-white">
+          </div>
+        </form>
+      </div>
+
+    </div>
   </div>
-
-  <div style="margin-top: 20px;">
-    <h3>Sections</h3>
-    <ul>
-      <li><a href="/system-operations/performance">AI Performance Logs</a></li>
-      <li><a href="/system-operations/team">Team Management</a></li>
-      <li><a href="/system-operations/dealers">Dealership Portals</a></li>
-      <li><a href="/system-operations/security">Security & Access</a></li>
-      <li><a href="/system-operations/settings">System Settings</a></li>
-    </ul>
-  </div>
-{% endblock %}
+</body>
+</html>
