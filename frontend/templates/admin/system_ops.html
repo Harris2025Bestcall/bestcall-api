@@ -196,7 +196,7 @@
 
   async function fetchTrainingProgress(dealerId) {
     try {
-      const res = await secureFetch(`/system-operations/train/${dealerId}/progress`);
+      const res = await secureFetch(`/admin/system-operations/train/${dealerId}/progress`);
       const data = await res.json();
 
       const bar = document.getElementById("progressBar");
@@ -211,7 +211,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
-    const verify = await secureFetch("/system-operations/train/dealer1/progress");
+    const verify = await secureFetch(`/admin/system-operations/train/${dealerId}/progress`);
     if (!verify.ok) {
       alert("Session expired.");
       localStorage.removeItem("access_token");
@@ -267,7 +267,7 @@
   });
   async function fetchDealerMetrics(dealerId) {
   try {
-    const res = await secureFetch(`/system-operations/train/${dealerId}/metrics`);
+    const res = await secureFetch(`/admin/system-operations/train/${dealerId}/metrics`);
     const data = await res.json();
 
     document.getElementById("metricClients").textContent = data.total_clients;
