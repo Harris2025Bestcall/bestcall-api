@@ -210,17 +210,19 @@
     }
   }
 
-  document.addEventListener("DOMContentLoaded", async () => {
-    const verify = await secureFetch(`/admin/system-operations/train/${dealerId}/progress`);
-    if (!verify.ok) {
-      alert("Session expired.");
-      localStorage.removeItem("access_token");
-      window.location.href = "/client/login";
-    }
+document.addEventListener("DOMContentLoaded", async () => {
+  const dealerId = document.getElementById("dealer_id").value;
 
-    const dealerId = document.getElementById("dealer_id").value;
-    fetchTrainingProgress(dealerId); // initial load
-    fetchDealerMetrics(dealerId); // initial metrics load
+  const verify = await secureFetch(`/admin/system-operations/train/${dealerId}/progress`);
+  if (!verify.ok) {
+    alert("Session expired.");
+    localStorage.removeItem("access_token");
+    window.location.href = "/client/login";
+  }
+
+  fetchTrainingProgress(dealerId); // initial load
+  fetchDealerMetrics(dealerId);    // initial metrics load
+
 
 
     document.getElementById("bank_summary_upload").onclick = () => uploadFile(
@@ -269,6 +271,7 @@
   try {
     const res = await secureFetch(`/admin/system-operations/train/${dealerId}/metrics`);
     const data = await res.json();
+    
 
     document.getElementById("metricClients").textContent = data.total_clients;
     document.getElementById("metricFICO").textContent = data.average_fico;
