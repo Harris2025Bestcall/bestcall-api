@@ -1,32 +1,40 @@
-import json
-from collections import Counter
+import pandas as pd
+import os
 
-def summarize_training_log(log_path="data/training_log.jsonl") -> dict:
-    results = []
-    mismatches = Counter()
-    try:
-        with open(log_path, "r") as f:
-            for line in f:
-                entry = json.loads(line)
-                results.append(entry)
-                for detail in entry.get("details", []):
-                    if not detail.get("match"):
-                        mismatches[detail["bank"]] += 1
-    except FileNotFoundError:
-        return {"error": "training_log.jsonl not found"}
+def summarize_training_log(dealer_id: str) -> str:
+    """
+    Reads the dealer's cleaned bank decision CSV, summarizes approval patterns,
+    and writes a markdown summary file. Returns the path to the summary file.
+    """
+    input_path = f"data/{dealer_id}/bank_decisions_cleaned.csv"
+    output_path = f"data/{dealer_id}/bank_patterns_summary.md"
 
-    if not results:
-        return {"error": "no entries in training log"}
+    if not os.path.exists(input_path):
+        raise FileNotFoundError(f"No cleaned bank decisions found at {input_path}")
 
-    total_clients = len(results)
-    total_accuracy = sum([float(r["accuracy"].strip('%')) for r in results])
-    average_accuracy = round(total_accuracy / total_clients, 2)
+    df = pd.read_csv(input_path)
 
-    most_missed = mismatches.most_common(5)
+    # Count decisions by type
+    decision_counts = df["decision_type"].value_counts().to_dict()
+    top_banks = df["finance_source"].value_counts().head(5).to_dict()
+    avg_credit_score = round(df["credit_score"].dropna().astype(float).mean(), 1)
 
-    return {
-        "total_clients": total_clients,
-        "average_accuracy": f"{average_accuracy}%",
-        "most_common_mismatches": most_missed,
-        "latest_clients": [r["client_id"] for r in results[-5:]]
-    }
+    lines = [
+        f"# Bank Pattern Summary for Dealer `{dealer_id}`\n",
+        f"**Total Applications:** {len(df)}",
+        f"**Average Credit Score:** {avg_credit_score}\n",
+        "## Decision Breakdown:",
+    ]
+    for decision, count in decision_counts.items():
+        lines.append(f"- {decision}: {count}")
+
+    lines.append("\n## Top 5 Lenders by Volume:")
+    for lender, count in top_banks.items():
+        lines.append(f"- {lender}: {count} apps")
+
+    # Save to Markdown file
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w") as f:
+        f.write("\n".join(lines))
+
+    return output_path

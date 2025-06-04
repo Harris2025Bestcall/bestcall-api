@@ -323,3 +323,10 @@ async def upload_decision_data(dealer_id: str, file: UploadFile = File(...), use
         }
     except Exception as e:
         return {"status": "error", "message": str(e)}
+@app.post("/system-operations/train/{dealer_id}/summary")
+async def generate_summary(dealer_id: str, user: dict = Depends(get_current_user)):
+    try:
+        result = summarize_training_log(dealer_id)
+        return {"status": "success", "summary_path": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
