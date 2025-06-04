@@ -22,7 +22,6 @@
         <!-- Step 1: Upload Baseline Data -->
         <fieldset class="mb-8">
           <div class="grid md:grid-cols-2 gap-6">
-
             <!-- Bank Summary Upload -->
             <div>
               <label class="block mb-2 text-lg">Upload Bank Summary (.csv)</label>
@@ -44,9 +43,63 @@
                 <button id="inventory_update" class="text-blue-300 underline text-sm hidden">Update Data</button>
               </div>
             </div>
-
           </div>
         </fieldset>
+
+        <!-- Step 2: Review & Summarize -->
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold mb-2">Review & Summarize</h3>
+          <button id="generate_summary" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded">Generate bank_patterns_summary.md</button>
+          <div class="h-2 bg-gray-700 mt-3 rounded">
+            <div id="summary_progress" class="h-full bg-blue-500 w-0 rounded text-xs text-center" style="transition: width 0.4s ease"></div>
+          </div>
+          <a href="/data/lender_profiles/bank_patterns_summary.md" target="_blank" id="summary_link" class="text-blue-300 underline text-sm mt-2 block hidden">Review bank_patterns_summary.md</a>
+        </div>
+
+        <!-- Step 3: Begin Live Training -->
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold mb-2">Begin Live Training</h3>
+          <p class="mb-4">Upload recent client example to begin training predictions.</p>
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <label>Credit Report (PDF)</label>
+              <input type="file" class="w-full p-2 mb-2 bg-white text-black rounded">
+            </div>
+            <div>
+              <label>Credit Application (PDF)</label>
+              <input type="file" class="w-full p-2 mb-2 bg-white text-black rounded">
+            </div>
+          </div>
+          <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mt-2">Predict Approval Outcome</button>
+        </div>
+
+        <!-- Step 4: Upload Actual Bank Results -->
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold mb-2">Upload Actual Results (up to 8 PDFs)</h3>
+          <div class="grid gap-2 mb-4">
+            <input type="file" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" class="w-full p-2 bg-white text-black rounded">
+            <input type="file" class="w-full p-2 bg-white text-black rounded">
+          </div>
+          <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Upload Actual Results</button>
+        </div>
+
+        <!-- Step 5: Compare and Train -->
+        <div class="mb-4">
+          <h3 class="text-xl font-semibold mb-2">Compare and Train</h3>
+          <p class="mb-2 text-sm">System will analyze its prediction vs actual decisions and update the training model.</p>
+          <button class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">Compare and Train</button>
+          <div class="h-2 bg-gray-700 mt-3 rounded">
+            <div class="h-full bg-blue-500 w-[90%] rounded text-xs text-center">Successfully Retrained – System Processed</div>
+          </div>
+          <button class="mt-4 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded">Train on Another Example</button>
+        </div>
+
       </section>
     </div>
   </div>
@@ -95,6 +148,27 @@
       document.getElementById("inventory_upload").classList.remove("hidden");
       document.getElementById("inventory_uploaded").classList.add("hidden");
       document.getElementById("inventory_update").classList.add("hidden");
+    }
+
+    // 🔁 Generate Bank Pattern Summary with Progress
+    document.getElementById("generate_summary").onclick = async () => {
+      const dealerId = document.getElementById("dealer_id").value;
+      const progressBar = document.getElementById("summary_progress");
+      const link = document.getElementById("summary_link");
+
+      progressBar.style.width = "25%";
+      progressBar.innerText = "Reviewing data...";
+
+      const res = await fetch(`/admin/generate-summary/${dealerId}`);
+      if (res.ok) {
+        progressBar.style.width = "100%";
+        progressBar.innerText = "Baseline data processed";
+        link.classList.remove("hidden");
+      } else {
+        progressBar.style.width = "0";
+        progressBar.innerText = "";
+        alert("Error creating summary.");
+      }
     }
   </script>
 </body>
