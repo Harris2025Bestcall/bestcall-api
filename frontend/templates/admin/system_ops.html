@@ -211,7 +211,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
-    const verify = await secureFetch("/metrics");
+    const verify = await secureFetch("/system-operations/train/dealer1/progress");
     if (!verify.ok) {
       alert("Session expired.");
       localStorage.removeItem("access_token");
