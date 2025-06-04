@@ -1,24 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>System Operations - BestCall AI</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-green-900 font-sans text-white">
-  <div id="dashboard" class="min-h-screen p-8">
+  <div id="dashboard" class="min-h-screen p-10 bg-green-900">
     <div class="max-w-7xl mx-auto">
-      <h1 class="text-4xl font-bold mb-8">System Operations</h1>
-
-      <!-- Onboarding / Model Training Section -->
       <section id="training" class="bg-green-800 rounded-xl p-8 shadow-xl mb-12">
-        <h2 class="text-3xl font-bold mb-6">Onboarding / Model Training</h2>
-
-        <!-- Select Dealer -->
         <div class="mb-6">
           <label class="block mb-2 text-lg">Select Dealer Profile to Train</label>
-          <select name="dealer_id" class="w-full p-2 rounded bg-white text-black">
+          <select id="dealer_id" class="w-full p-2 rounded bg-white text-black">
             <option value="dealer1">Dealer 1</option>
             <option value="dealer2">Dealer 2</option>
             <option value="dealer3">Dealer 3</option>
@@ -28,82 +22,80 @@
         <!-- Step 1: Upload Baseline Data -->
         <fieldset class="mb-8">
           <div class="grid md:grid-cols-2 gap-6">
-            <form action="/admin/upload-bank-summary" method="post" enctype="multipart/form-data">
-              <input type="hidden" name="dealer_id" value="dealer1">
-              <label class="block mb-2 text-lg">Upload Bank Summary (.csv)</label>
-              <input type="file" name="bank_summary" class="w-full p-2 mb-4 bg-white text-black rounded" required>
-              <button class="bg-gray-500 px-4 py-2 rounded cursor-not-allowed">Uploaded</button>
-              <button class="ml-2 text-sm underline text-blue-300">Update Data</button>
-            </form>
 
-            <form action="/admin/upload-inventory" method="post" enctype="multipart/form-data">
-             <input type="hidden" name="dealer_id" value="dealer1">
-             <label class="block mb-2 text-lg">Upload Inventory (.csv)</label>
-             <input type="file" name="inventory" class="w-full p-2 mb-4 bg-white text-black rounded" required>
-             <button class="bg-gray-500 px-4 py-2 rounded cursor-not-allowed">Uploaded</button>
-             <button class="ml-2 text-sm underline text-blue-300">Update Data</button>
-            </form>
+            <!-- Bank Summary Upload -->
+            <div>
+              <label class="block mb-2 text-lg">Upload Bank Summary (.csv)</label>
+              <input type="file" id="bank_summary_file" class="w-full p-2 mb-4 bg-white text-black rounded">
+              <div class="flex gap-4">
+                <button id="bank_summary_upload" class="bg-blue-500 px-4 py-2 rounded">Upload</button>
+                <button id="bank_summary_uploaded" class="bg-gray-500 px-4 py-2 rounded cursor-not-allowed hidden">Uploaded</button>
+                <button id="bank_summary_update" class="text-blue-300 underline text-sm hidden">Update Data</button>
+              </div>
+            </div>
+
+            <!-- Inventory Upload -->
+            <div>
+              <label class="block mb-2 text-lg">Upload Inventory (.csv)</label>
+              <input type="file" id="inventory_file" class="w-full p-2 mb-4 bg-white text-black rounded">
+              <div class="flex gap-4">
+                <button id="inventory_upload" class="bg-blue-500 px-4 py-2 rounded">Upload</button>
+                <button id="inventory_uploaded" class="bg-gray-500 px-4 py-2 rounded cursor-not-allowed hidden">Uploaded</button>
+                <button id="inventory_update" class="text-blue-300 underline text-sm hidden">Update Data</button>
+              </div>
+            </div>
+
           </div>
         </fieldset>
-
-        <!-- Step 2: Summarize Bank Patterns -->
-        <div class="mb-6">
-          <h3 class="text-xl font-semibold mb-2">Review & Summarize</h3>
-          <button class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded">Generate bank_patterns_summary.md</button>
-          <div class="w-full bg-gray-700 h-4 mt-3 rounded">
-            <div class="bg-blue-500 h-4 rounded text-xs text-center text-white" style="width: 100%">Baseline data processed</div>
-          </div>
-          <button class="mt-2 text-sm underline text-blue-300">Review bank_patterns_summary.md</button>
-        </div>
-
-        <!-- Step 3: Begin Training Phase -->
-        <div class="mt-8 mb-4">
-          <h3 class="text-xl font-semibold mb-2">Begin Live Training</h3>
-          <p class="mb-4">Upload recent client example to begin training predictions.</p>
-          <form action="/upload-training-example" method="post" enctype="multipart/form-data" class="grid md:grid-cols-2 gap-6">
-            <div>
-              <label class="block mb-1">Credit Report (PDF)</label>
-              <input type="file" name="credit_report" class="w-full p-2 rounded bg-white text-black">
-            </div>
-            <div>
-              <label class="block mb-1">Credit Application (PDF)</label>
-              <input type="file" name="credit_app" class="w-full p-2 rounded bg-white text-black">
-            </div>
-          </form>
-          <button class="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Predict Approval Outcome</button>
-        </div>
-
-        <!-- Step 4: Upload Actual Bank Decisions -->
-        <div class="mt-8 mb-4">
-          <h3 class="text-xl font-semibold mb-2">Upload Actual Results (up to 8 PDFs)</h3>
-          <form action="/upload-actual-results" method="post" enctype="multipart/form-data" class="space-y-2">
-            <input type="file" name="actual_result_1" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" name="actual_result_2" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" name="actual_result_3" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" name="actual_result_4" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" name="actual_result_5" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" name="actual_result_6" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" name="actual_result_7" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" name="actual_result_8" class="w-full p-2 bg-white text-black rounded">
-            <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 mt-2 rounded">Upload Actual Results</button>
-          </form>
-        </div>
-
-        <!-- Step 5: Compare & Train Button -->
-        <div class="mt-6">
-          <h3 class="text-xl font-semibold mb-2">Compare and Train</h3>
-          <p class="text-sm text-gray-200 mb-2">System will analyze its prediction vs actual decisions and update the training model.</p>
-          <button class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">Compare and Train</button>
-
-          <!-- Training Feedback -->
-          <div class="w-full bg-gray-700 h-4 mt-4 rounded">
-            <div class="bg-blue-500 h-4 rounded text-xs text-center text-white" style="width: 100%">Successfully Retrained – System Processed</div>
-          </div>
-          <button class="mt-4 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded">Train on Another Example</button>
-        </div>
       </section>
-
     </div>
   </div>
+
+  <script>
+    async function uploadFile(inputId, route, uploadedBtnId, uploadBtnId, updateBtnId) {
+      const dealerId = document.getElementById("dealer_id").value;
+      const fileInput = document.getElementById(inputId);
+      const file = fileInput.files[0];
+      if (!file) return alert("Please choose a file first.");
+
+      const formData = new FormData();
+      formData.append("dealer_id", dealerId);
+      formData.append(inputId === "bank_summary_file" ? "bank_summary" : "inventory", file);
+
+      const res = await fetch(`/admin/${route}`, {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        document.getElementById(uploadBtnId).classList.add("hidden");
+        document.getElementById(uploadedBtnId).classList.remove("hidden");
+        document.getElementById(updateBtnId).classList.remove("hidden");
+      } else {
+        alert("Upload failed: " + (data?.detail || "Unknown error"));
+      }
+    }
+
+    document.getElementById("bank_summary_upload").onclick = () => uploadFile(
+      "bank_summary_file", "upload-bank-summary", "bank_summary_uploaded", "bank_summary_upload", "bank_summary_update"
+    );
+
+    document.getElementById("inventory_upload").onclick = () => uploadFile(
+      "inventory_file", "upload-inventory", "inventory_uploaded", "inventory_upload", "inventory_update"
+    );
+
+    document.getElementById("bank_summary_update").onclick = () => {
+      document.getElementById("bank_summary_upload").classList.remove("hidden");
+      document.getElementById("bank_summary_uploaded").classList.add("hidden");
+      document.getElementById("bank_summary_update").classList.add("hidden");
+    }
+
+    document.getElementById("inventory_update").onclick = () => {
+      document.getElementById("inventory_upload").classList.remove("hidden");
+      document.getElementById("inventory_uploaded").classList.add("hidden");
+      document.getElementById("inventory_update").classList.add("hidden");
+    }
+  </script>
 </body>
 </html>
