@@ -29,11 +29,13 @@
         <fieldset class="mb-8">
           <div class="grid md:grid-cols-2 gap-6">
             <form action="/admin/upload-bank-summary" method="post" enctype="multipart/form-data">
-              <label class="block mb-2 text-lg">Upload Bank Summary (.csv)</label>
               <input type="hidden" name="dealer_id" value="dealer1">
+              <label class="block mb-2 text-lg">Upload Bank Summary (.csv)</label>
+              <input type="file" name="bank_summary" class="w-full p-2 mb-4 bg-white text-black rounded" required>
               <button class="bg-gray-500 px-4 py-2 rounded cursor-not-allowed">Uploaded</button>
               <button class="ml-2 text-sm underline text-blue-300">Update Data</button>
             </form>
+
 
             <form action="/admin/upload-inventory" method="post" enctype="multipart/form-data">
               <label class="block mb-2 text-lg">Upload Inventory (.csv)</label>
