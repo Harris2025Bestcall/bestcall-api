@@ -96,13 +96,13 @@ async function handleSummaryGeneration() {
   preview.textContent = "⏳ Generating summary...";
 
   try {
-    const res = await secureFetch(`/system-operations/train/${dealerId}/summary`);
+    const res = await secureFetch(`/admin/system-operations/train/${dealerId}/summary`);
     const result = await res.json();
 
     if (!res.ok) {
       preview.textContent = `⚠️ Error: ${result.detail || "Summary failed."}`;
     } else {
-      const mdRes = await secureFetch(`/system-operations/train/${dealerId}/summary/preview`);
+      const previewRes = await secureFetch(`/admin/system-operations/train/${dealerId}/summary/preview`);
       const text = await mdRes.text();
       preview.textContent = text;
       timestamp.textContent = new Date().toLocaleString();
