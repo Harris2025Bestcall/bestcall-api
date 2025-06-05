@@ -7,17 +7,9 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-green-900 font-sans text-white">
-  <div id="dashboard" class="min-h-screen p-10 bg-green-900">
+  <div class="min-h-screen p-10 bg-green-900">
     <div class="max-w-7xl mx-auto">
-      <section id="training" class="bg-green-800 rounded-xl p-8 shadow-xl mb-12">
-        <div class="mb-6">
-          <label class="block mb-2 text-lg">Select Dealer Profile to Train</label>
-          <select id="dealer_id" class="w-full p-2 rounded bg-white text-black">
-            <option value="dealer1">Dealer 1</option>
-            <option value="dealer2">Dealer 2</option>
-            <option value="dealer3">Dealer 3</option>
-          </select>
-        </div>
+      <section class="bg-green-800 rounded-xl p-8 shadow-xl mb-12">
 
         <!-- Step 1: Upload Baseline Data -->
         <fieldset class="mb-8">
@@ -25,266 +17,89 @@
             <!-- Bank Summary Upload -->
             <div>
               <label class="block mb-2 text-lg">Upload Bank Summary (.csv)</label>
-              <input type="file" id="bank_summary_file" class="w-full p-2 mb-4 bg-white text-black rounded">
-              <div class="flex gap-4">
-                <button id="bank_summary_upload" class="bg-blue-500 px-4 py-2 rounded">Upload</button>
-                <button id="bank_summary_uploaded" class="bg-gray-500 px-4 py-2 rounded cursor-not-allowed hidden">Uploaded</button>
-                <button id="bank_summary_update" class="text-blue-300 underline text-sm hidden">Update Data</button>
-              </div>
+              <input type="file" id="bank-summary-file" class="w-full p-2 mb-4 bg-white text-black rounded">
+              <button id="upload-bank-summary" class="bg-blue-500 px-4 py-2 rounded">Upload</button>
             </div>
-<div id="bank_summary_status" class="mt-2 text-sm font-medium"></div>
 
             <!-- Inventory Upload -->
             <div>
               <label class="block mb-2 text-lg">Upload Inventory (.csv)</label>
-              <input type="file" id="inventory_file" class="w-full p-2 mb-4 bg-white text-black rounded">
-              <div class="flex gap-4">
-                <button id="inventory_upload" class="bg-blue-500 px-4 py-2 rounded">Upload</button>
-                <button id="inventory_uploaded" class="bg-gray-500 px-4 py-2 rounded cursor-not-allowed hidden">Uploaded</button>
-                <button id="inventory_update" class="text-blue-300 underline text-sm hidden">Update Data</button>
-              </div>
+              <input type="file" id="inventory-file" class="w-full p-2 mb-4 bg-white text-black rounded">
+              <button id="upload-inventory" class="bg-blue-500 px-4 py-2 rounded">Upload</button>
             </div>
           </div>
-          <div id="inventory_status" class="mt-2 text-sm font-medium"></div>
-
         </fieldset>
 
-        <!-- Step 2: Review & Summarize -->
+        <!-- Step 2: Generate Summary -->
         <div class="mb-8">
-          <h3 class="text-xl font-semibold mb-2">Review & Summarize</h3>
-          <button id="generate_summary" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded">Generate bank_patterns_summary.md</button>
+          <h3 class="text-xl font-semibold mb-2">Generate Bank Pattern Summary</h3>
+          <button id="generate-summary" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded">Generate Summary</button>
           <div class="h-2 bg-gray-700 mt-3 rounded">
-            <div id="summary_progress" class="h-full bg-blue-500 w-0 rounded text-xs text-center" style="transition: width 0.4s ease"></div>
+            <div id="summary_progress" class="h-full bg-blue-500 w-0 rounded text-xs text-center"></div>
           </div>
-          <a href="/data/lender_profiles/bank_patterns_summary.md" target="_blank" id="summary_link" class="text-blue-300 underline text-sm mt-2 block hidden">Review bank_patterns_summary.md</a>
+          <div class="mt-4">
+            <h3 class="text-lg font-semibold text-orange-400">📄 Bank Pattern Summary Preview</h3>
+            <div id="summary-preview" class="bg-zinc-800 text-white p-4 mt-2 rounded-lg border border-orange-500 h-64 overflow-y-scroll whitespace-pre-wrap text-sm">
+              No summary loaded yet.
+            </div>
+          </div>
         </div>
-<div class="summary-section mt-6">
-  <h3 class="text-lg font-semibold text-orange-400">📄 Bank Pattern Summary Preview</h3>
-  <div id="summaryPreview" class="scroll-box bg-zinc-800 text-white p-4 mt-2 rounded-lg border border-orange-500 h-64 overflow-y-scroll whitespace-pre-wrap text-sm">
-    No summary loaded yet.
-  </div>
-  <div class="text-xs text-gray-300 mt-1">
-    Last generated: <span id="summaryTimestamp">--</span>
-  </div>
-</div>
-<!-- Step 2.5: Confidence Bar -->
-<div class="mt-8">
-  <h3 class="text-lg font-semibold text-white mb-2">🧠 Training Confidence</h3>
-  <div class="w-full bg-gray-700 h-4 rounded">
-    <div id="progressBar" class="bg-orange-500 h-4 rounded transition-all duration-500" style="width: 0%;"></div>
-  </div>
-  <p class="text-sm text-white mt-1" id="progressLabel">Loading training progress...</p>
-</div>
 
-<!-- Step 2.6: Dealer Metrics -->
-<div class="mt-8">
-  <h3 class="text-lg font-semibold text-white mb-2">📊 Dealer Metrics</h3>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div class="bg-green-700 p-4 rounded-xl text-white shadow-md">
-      <h4 class="text-sm">Total Training Clients</h4>
-      <p class="text-2xl font-bold" id="metricClients">--</p>
-    </div>
-    <div class="bg-blue-700 p-4 rounded-xl text-white shadow-md">
-      <h4 class="text-sm">Average FICO</h4>
-      <p class="text-2xl font-bold" id="metricFICO">--</p>
-    </div>
-    <div class="bg-yellow-600 p-4 rounded-xl text-white shadow-md">
-      <h4 class="text-sm">Approval Rate</h4>
-      <p class="text-2xl font-bold" id="metricApproval">--</p>
-    </div>
-  </div>
-</div>
+        <!-- Step 3: Training Confidence + Metrics -->
+        <div class="mt-8">
+          <h3 class="text-lg font-semibold text-white mb-2">🧠 Training Confidence</h3>
+          <div class="w-full bg-gray-700 h-4 rounded">
+            <div id="progress-bar" class="bg-orange-500 h-4 rounded transition-all duration-500" style="width: 0%;"></div>
+          </div>
+          <p class="text-sm text-white mt-1" id="progress-text">Loading training progress...</p>
+        </div>
 
-        <!-- Step 3: Begin Live Training -->
-        <div class="mb-8">
-          <h3 class="text-xl font-semibold mb-2">Begin Live Training</h3>
-          <p class="mb-4">Upload recent client example to begin training predictions.</p>
+        <div class="mt-8">
+          <h3 class="text-lg font-semibold text-white mb-2">📊 Dealer Metrics</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-green-700 p-4 rounded-xl text-white shadow-md">
+              <h4 class="text-sm">Total Training Clients</h4>
+              <p class="text-2xl font-bold" id="client-count">--</p>
+            </div>
+            <div class="bg-blue-700 p-4 rounded-xl text-white shadow-md">
+              <h4 class="text-sm">Average FICO</h4>
+              <p class="text-2xl font-bold" id="avg-fico">--</p>
+            </div>
+            <div class="bg-yellow-600 p-4 rounded-xl text-white shadow-md">
+              <h4 class="text-sm">Approval Rate</h4>
+              <p class="text-2xl font-bold" id="approval-rate">--</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Upload Credit App + Report -->
+        <div class="mb-8 mt-12">
+          <h3 class="text-xl font-semibold mb-2">Upload Client Example</h3>
           <div class="grid md:grid-cols-2 gap-6">
             <div>
               <label>Credit Report (PDF)</label>
-              <input type="file" class="w-full p-2 mb-2 bg-white text-black rounded">
+              <input type="file" id="credit-report" class="w-full p-2 mb-2 bg-white text-black rounded">
             </div>
             <div>
               <label>Credit Application (PDF)</label>
-              <input type="file" class="w-full p-2 mb-2 bg-white text-black rounded">
+              <input type="file" id="credit-app" class="w-full p-2 mb-2 bg-white text-black rounded">
             </div>
           </div>
-          <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mt-2">Predict Approval Outcome</button>
+          <button id="upload-credit-files" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mt-2">Upload Client Example</button>
         </div>
 
-        <!-- Step 4: Upload Actual Bank Results -->
+        <!-- Step 5: Upload Actual Results -->
         <div class="mb-8">
-          <h3 class="text-xl font-semibold mb-2">Upload Actual Results (up to 8 PDFs)</h3>
-          <div class="grid gap-2 mb-4">
-            <input type="file" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" class="w-full p-2 bg-white text-black rounded">
-            <input type="file" class="w-full p-2 bg-white text-black rounded">
-          </div>
-          <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Upload Actual Results</button>
-        </div>
-
-        <!-- Step 5: Compare and Train -->
-        <div class="mb-4">
-          <h3 class="text-xl font-semibold mb-2">Compare and Train</h3>
-          <p class="mb-2 text-sm">System will analyze its prediction vs actual decisions and update the training model.</p>
-          <button class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">Compare and Train</button>
-          <div class="h-2 bg-gray-700 mt-3 rounded">
-            <div class="h-full bg-blue-500 w-[90%] rounded text-xs text-center">Successfully Retrained – System Processed</div>
-          </div>
-          <button class="mt-4 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded">Train on Another Example</button>
+          <h3 class="text-xl font-semibold mb-2">Upload Actual Bank Results</h3>
+          <input type="text" id="actual-client-id" placeholder="Enter Client ID" class="w-full p-2 mb-4 text-black rounded">
+          <input type="file" id="actual-bank-files" class="w-full p-2 bg-white text-black rounded" multiple>
+          <button id="upload-bank-results" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mt-2">Upload Bank Results</button>
         </div>
 
       </section>
     </div>
   </div>
 
- <script>
-  const token = localStorage.getItem("access_token");
-  if (!token) {
-    alert("Admin access requires login.");
-    window.location.href = "/client/login";
-  }
-
-  function secureFetch(url, options = {}) {
-    return fetch(url, {
-      ...options,
-      headers: {
-        ...options.headers,
-        Authorization: "Bearer " + token
-      }
-    });
-  }
-
-  async function uploadFile(inputId, route, uploadedBtnId, uploadBtnId, updateBtnId, statusId) {
-  const dealerId = document.getElementById("dealer_id").value;
-  const fileInput = document.getElementById(inputId);
-  const file = fileInput.files[0];
-  const statusEl = document.getElementById(statusId);
-
-  if (!file) return alert("Please choose a file first.");
-
-  const formData = new FormData();
-  formData.append("dealer_id", dealerId);
-  formData.append(inputId === "bank_summary_file" ? "bank_summary" : "inventory", file);
-
-  const res = await secureFetch(`/admin/${route}`, {
-    method: "POST",
-    body: formData
-  });
-
-  const data = await res.json();
-
-  if (res.ok) {
-    document.getElementById(uploadBtnId).classList.add("hidden");
-    document.getElementById(uploadedBtnId).classList.remove("hidden");
-    document.getElementById(updateBtnId).classList.remove("hidden");
-
-    statusEl.textContent = "✅ Upload successful";
-    statusEl.className = "text-green-400 text-sm mt-2";
-    statusEl.classList.remove("hidden");
-  } else {
-    statusEl.textContent = "❌ Upload failed: " + (data?.detail || "Unknown error");
-    statusEl.className = "text-red-400 text-sm mt-2";
-    statusEl.classList.remove("hidden");
-  }
-}
-
-  async function fetchTrainingProgress(dealerId) {
-    try {
-      const res = await secureFetch(`/admin/system-operations/train/${dealerId}/progress`);
-      const data = await res.json();
-
-      const bar = document.getElementById("progressBar");
-      const label = document.getElementById("progressLabel");
-
-      bar.style.width = `${data.progress}%`;
-      label.textContent = `AI trained on ${data.progress}% (${data.trained} of ${data.target} required clients)`;
-    } catch (err) {
-      console.error("Error fetching training progress:", err);
-      document.getElementById("progressLabel").textContent = "❌ Could not load training progress.";
-    }
-  }
-
-document.addEventListener("DOMContentLoaded", async () => {
-  const dealerId = document.getElementById("dealer_id").value;
-
-  const verify = await secureFetch(`/admin/system-operations/train/${dealerId}/progress`);
-  if (!verify.ok) {
-    alert("Session expired.");
-    localStorage.removeItem("access_token");
-    window.location.href = "/client/login";
-  }
-
-  fetchTrainingProgress(dealerId); // initial load
-  fetchDealerMetrics(dealerId);    // initial metrics load
-
-
-
-    document.getElementById("bank_summary_upload").onclick = () => uploadFile(
-  "bank_summary_file", "upload-bank-summary", "bank_summary_uploaded", "bank_summary_upload", "bank_summary_update", "bank_summary_status"
-    );
-
-    document.getElementById("inventory_upload").onclick = () => uploadFile(
-  "inventory_file", "upload-inventory", "inventory_uploaded", "inventory_upload", "inventory_update", "inventory_status"
-    );
-
-    document.getElementById("bank_summary_update").onclick = () => {
-      document.getElementById("bank_summary_upload").classList.remove("hidden");
-      document.getElementById("bank_summary_uploaded").classList.add("hidden");
-      document.getElementById("bank_summary_update").classList.add("hidden");
-    };
-
-    document.getElementById("inventory_update").onclick = () => {
-      document.getElementById("inventory_upload").classList.remove("hidden");
-      document.getElementById("inventory_uploaded").classList.add("hidden");
-      document.getElementById("inventory_update").classList.add("hidden");
-    };
-
-    // 🔁 Generate Summary + Refresh Training Progress
-    document.getElementById("generate_summary").onclick = async () => {
-      const progressBar = document.getElementById("summary_progress");
-      const link = document.getElementById("summary_link");
-
-      progressBar.style.width = "25%";
-      progressBar.innerText = "Reviewing data...";
-
-      const res = await secureFetch(`/system-operations/train/${dealerId}/summary`);
-      if (res.ok) {
-        progressBar.style.width = "100%";
-        progressBar.innerText = "Baseline data processed";
-        link.classList.remove("hidden");
-        await fetchTrainingProgress(dealerId); // update after summary
-        await fetchDealerMetrics(dealerId); // update metrics after summary
-      } else {
-        progressBar.style.width = "0";
-        progressBar.innerText = "";
-        alert("Error creating summary.");
-      }
-    };
-  });
-  async function fetchDealerMetrics(dealerId) {
-  try {
-    const res = await secureFetch(`/admin/system-operations/train/${dealerId}/metrics`);
-    const data = await res.json();
-    
-
-    document.getElementById("metricClients").textContent = data.total_clients;
-    document.getElementById("metricFICO").textContent = data.average_fico;
-    document.getElementById("metricApproval").textContent = `${data.approval_rate}%`;
-  } catch (err) {
-    console.error("Error loading metrics:", err);
-    document.getElementById("metricClients").textContent = "❌";
-    document.getElementById("metricFICO").textContent = "❌";
-    document.getElementById("metricApproval").textContent = "❌";
-  }
-}
-
-</script>
-
+  <script src="/static/js/admin.js"></script>
 </body>
 </html>
